@@ -1,0 +1,200 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+.app {
+  min-height: 100vh;
+  background-color: #f4f6f9; 
+  width: 100%;
+}
+
+.navbar {
+  background-color: #1a73e8;
+  color: white;
+  padding: 15px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+}
+
+.navbar h1 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.navbar ul li a {
+  color: white;
+  text-decoration: none;
+  font-size: 15px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.navbar ul li a:hover {
+  background-color: rgba(255,255,255,0.15);
+}
+
+.contenido {
+  padding: 30px 20px;
+  width: 100%;
+  max-width: 1400px; 
+  margin: 0 auto; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px 25px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+  margin-bottom: 20px;
+  width: 100%;
+  /* CRUCIAL: Permite scroll horizontal en pantallas pequeñas sin romper la página */
+  overflow-x: auto; 
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px; /* Aumentado un poco para coincidir */
+  font-weight: bold;
+  transition: opacity 0.2s ease, transform 0.1s;
+}
+
+.btn:active {
+  transform: scale(0.98); 
+}
+
+.btn-primary {
+  background-color: #1a73e8;
+  color: white;
+}
+
+.btn-danger {
+  background-color: #dc3545; 
+  color: white;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+/* ESTILOS DE LA TABLA */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  min-width: 900px; /* Reducido de 1100px a 900px */
+}
+
+th {
+  background-color: #1a73e8;
+  color: white;
+  padding: 10px 8px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 13px;
+  vertical-align: middle;
+  color: #333;
+  white-space: nowrap;
+}
+
+tr:hover td {
+  background-color: #f8f9fa; 
+}
+
+td .btn {
+  padding: 6px 12px;
+  font-size: 14px; 
+  margin-right: 4px;
+}
+
+input, select {
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 16px; /* Letra más grande también en los campos de texto */
+  width: 100%;
+  margin-bottom: 10px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus {
+  border-color: #1a73e8; 
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.titulo-pagina {
+  font-size: 24px; /* Aumentado ligeramente para mantener jerarquía */
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+  width: 100%;
+}
+
+/* FILAS CON COLOR SUAVE (tipo sistema moderno) */
+tr:nth-child(even) td {
+  background-color: #f5f7fa; /* gris clarito elegante */
+}
+
+/* HOVER MÁS SUAVE Y BONITO */
+tr:hover td {
+  background-color: #e9eef5;
+  transition: background-color 0.2s ease;
+}
+
+
+/* BORDE SUAVE A LA TABLA */
+table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+@media (max-width: 1366px) {
+  th, td {
+    font-size: 12px;
+    padding: 8px 6px;
+  }
+
+  td .btn {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+}
