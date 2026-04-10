@@ -169,21 +169,21 @@ function Alumnos() {
   const es4C = gradoActual?.nombre === '4' && gradoActual?.seccion === 'C'
 
   return (
-    <div>
+    <div style={{width:'100%'}}>
       <p className="titulo-pagina">👨‍🎓 Nómina de Alumnos</p>
 
-      <div className="card" style={{textAlign:'center', maxWidth:'600px', margin:'0 auto 20px auto'}}>
-        <div style={{display:'flex', justifyContent:'center', alignItems:'center', gap:'20px', flexWrap:'wrap'}}>
+      <div className="card" style={{textAlign:'center', maxWidth:'550px', margin:'0 auto 16px auto'}}>
+        <div style={{display:'flex', justifyContent:'center', alignItems:'center', gap:'15px', flexWrap:'wrap'}}>
           <div>
-            <label style={{fontWeight:'bold', marginRight:'10px'}}>Seleccionar Grado:</label>
+            <label style={{fontWeight:'bold', marginRight:'8px', fontSize:'15px'}}>Seleccionar Grado:</label>
             <select value={gradoFiltro} onChange={e => setGradoFiltro(e.target.value)}
-              style={{padding:'8px', borderRadius:'6px', border:'1px solid #ddd', fontSize:'15px'}}>
+              style={{padding:'8px', borderRadius:'6px', border:'1px solid #ddd', fontSize:'15px', width:'auto', marginBottom:'0'}}>
               <option value="">-- Seleccionar grado --</option>
               {grados.map(g => <option key={g.id} value={g.id}>Grado {g.nombre} Sección {g.seccion}</option>)}
             </select>
           </div>
           {gradoFiltro && (
-            <button className="btn btn-primary" onClick={() => {
+            <button className="btn btn-primary" style={{whiteSpace:'nowrap'}} onClick={() => {
               setMostrarFormulario(!mostrarFormulario)
               setEditandoId(null)
               setFormulario(formularioVacio)
@@ -194,14 +194,14 @@ function Alumnos() {
         </div>
 
         {gradoFiltro && gradoActual && (
-          <p style={{marginTop:'10px', fontSize:'16px', color:'#555'}}>
+          <p style={{marginTop:'10px', fontSize:'14px', color:'#555'}}>
             Grado {gradoActual.nombre} — Sección "{gradoActual.seccion}" | Total: {alumnos.length} alumnos
           </p>
         )}
 
         {mostrarFormulario && (
           <div style={{marginTop:'20px', textAlign:'left'}}>
-            <p style={{fontWeight:'bold', marginBottom:'10px'}}>
+            <p style={{fontWeight:'bold', marginBottom:'10px', fontSize:'15px'}}>
               {editandoId ? '✏️ Editar Alumno' : '📋 Datos del Alumno'}
             </p>
             <div className="form-grid">
@@ -223,7 +223,7 @@ function Alumnos() {
 
             {es4C && (
               <>
-                <p style={{fontWeight:'bold', margin:'15px 0 10px'}}>👨‍👩‍👧 Datos del Responsable</p>
+                <p style={{fontWeight:'bold', margin:'15px 0 10px', fontSize:'15px'}}>👨‍👩‍👧 Datos del Responsable</p>
                 <div className="form-grid">
                   <input placeholder="Nombre del responsable" value={formulario.responsable_nombre} onChange={e => setFormulario({...formulario, responsable_nombre: e.target.value})} />
                   <input placeholder="Apellido del responsable" value={formulario.responsable_apellido} onChange={e => setFormulario({...formulario, responsable_apellido: e.target.value})} />
@@ -244,60 +244,67 @@ function Alumnos() {
 
       {gradoFiltro && (
         <div className="card" style={{overflowX:'auto'}}>
-          <table style={{fontSize:'14px'}}>
+          <table style={{
+            fontSize:'13px',
+            tableLayout:'fixed',
+            width:'100%',
+            borderCollapse:'collapse',
+            borderRadius:'8px',
+            overflow:'hidden'
+          }}>
             <thead>
               <tr>
-                <th>N°</th>
-                <th>NIE</th>
-                <th>Nombre completo</th>
-                <th>Sexo</th>
-                <th>Grado</th>
-                <th>Sección</th>
+                <th style={{width:'35px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>N°</th>
+                <th style={{width:'80px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>NIE</th>
+                <th style={{width:'170px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Nombre completo</th>
+                <th style={{width:'50px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Sexo</th>
+                <th style={{width:'55px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Grado</th>
+                <th style={{width:'60px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Sección</th>
                 {es4C && (
                   <>
-                    <th>Fecha Nac.</th>
-                    <th>Edad</th>
-                    <th>Responsable</th>
-                    <th>DUI</th>
-                    <th>Teléfono</th>
-                    <th>Dirección</th>
-                    <th>Alergias</th>
+                    <th style={{width:'90px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Fecha Nac.</th>
+                    <th style={{width:'45px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Edad</th>
+                    <th style={{width:'150px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Responsable</th>
+                    <th style={{width:'90px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>DUI</th>
+                    <th style={{width:'90px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Teléfono</th>
+                    <th style={{width:'120px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Dirección</th>
+                    <th style={{width:'80px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Alergias</th>
                   </>
                 )}
-                <th>Acciones</th>
+                <th style={{width:'130px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {alumnos.map((a, index) => (
-                <tr key={a.id}>
-                  <td>{index + 1}</td>
-                  <td>{a.nie}</td>
-                  <td>{a.apellido}, {a.nombre}</td>
-                  <td>{a.sexo}</td>
-                  <td>{a.grados?.nombre}</td>
-                  <td>{a.grados?.seccion}</td>
+                <tr key={a.id} style={{background: index % 2 === 0 ? 'white' : '#f5f7fa'}}>
+                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{index + 1}</td>
+                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.nie}</td>
+                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.apellido}, {a.nombre}</td>
+                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', textAlign:'center'}}>{a.sexo}</td>
+                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', textAlign:'center'}}>{a.grados?.nombre}</td>
+                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', textAlign:'center'}}>{a.grados?.seccion}</td>
                   {es4C && (
                     <>
-                      <td>{a.fecha_nacimiento}</td>
-                      <td>{a.edad}</td>
-                      <td>{a.responsables?.nombre} {a.responsables?.apellido}</td>
-                      <td>{a.responsables?.dui}</td>
-                      <td>{a.responsables?.telefono}</td>
-                      <td>{a.responsables?.direccion || '-'}</td>
-                      <td>{a.alergias || '-'}</td>
+                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.fecha_nacimiento}</td>
+                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', textAlign:'center'}}>{a.edad}</td>
+                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.responsables?.nombre} {a.responsables?.apellido}</td>
+                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.responsables?.dui}</td>
+                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.responsables?.telefono}</td>
+                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.responsables?.direccion || '-'}</td>
+                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.alergias || '-'}</td>
                     </>
                   )}
-                  <td>
-                    <div style={{display:'flex', gap:'5px', alignItems:'center'}}>
-                      <button className="btn btn-primary" style={{padding:'6px 12px', fontSize:'13px', whiteSpace:'nowrap'}} onClick={() => editarAlumno(a)}>✏️ Editar</button>
-                      <button className="btn btn-danger" style={{padding:'6px 12px', fontSize:'13px', whiteSpace:'nowrap'}} onClick={() => eliminarAlumno(a.id)}>🗑️ Eliminar</button>
+                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7'}}>
+                    <div style={{display:'flex', gap:'4px', alignItems:'center'}}>
+                      <button className="btn btn-primary" style={{padding:'5px 10px', fontSize:'12px', whiteSpace:'nowrap'}} onClick={() => editarAlumno(a)}>✏️ Editar</button>
+                      <button className="btn btn-danger" style={{padding:'5px 10px', fontSize:'12px', whiteSpace:'nowrap'}} onClick={() => eliminarAlumno(a.id)}>🗑️ Eliminar</button>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {alumnos.length === 0 && <p style={{textAlign:'center', marginTop:'20px', color:'#999'}}>No hay alumnos en este grado aún</p>}
+          {alumnos.length === 0 && <p style={{textAlign:'center', marginTop:'20px', color:'#999', fontSize:'15px'}}>No hay alumnos en este grado aún</p>}
         </div>
       )}
 
