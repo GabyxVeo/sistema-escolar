@@ -168,6 +168,21 @@ function Alumnos() {
   const gradoActual = grados.find(g => g.id === parseInt(gradoFiltro))
   const es4C = gradoActual?.nombre === '4' && gradoActual?.seccion === 'C'
 
+  const thStyle = {
+    background: '#1a73e8',
+    color: 'white',
+    padding: '11px 8px',
+    fontSize: '13px',
+    whiteSpace: 'nowrap'
+  }
+
+  const tdStyle = {
+    padding: '10px 8px',
+    borderBottom: '1px solid #edf2f7',
+    fontSize: '13px',
+    verticalAlign: 'middle'
+  }
+
   return (
     <div style={{width:'100%'}}>
       <p className="titulo-pagina">👨‍🎓 Nómina de Alumnos</p>
@@ -245,59 +260,58 @@ function Alumnos() {
       {gradoFiltro && (
         <div className="card" style={{overflowX:'auto'}}>
           <table style={{
-            fontSize:'13px',
-            tableLayout:'fixed',
-            width:'100%',
-            borderCollapse:'collapse',
-            borderRadius:'8px',
-            overflow:'hidden'
+            fontSize: '13px',
+            width: '100%',
+            borderCollapse: 'collapse',
+            borderRadius: '8px',
+            overflow: 'hidden'
           }}>
             <thead>
               <tr>
-                <th style={{width:'35px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>N°</th>
-                <th style={{width:'80px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>NIE</th>
-                <th style={{width:'170px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Nombre completo</th>
-                <th style={{width:'50px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Sexo</th>
-                <th style={{width:'55px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Grado</th>
-                <th style={{width:'60px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Sección</th>
+                <th style={{...thStyle, width:'35px', textAlign:'center'}}>N°</th>
+                <th style={{...thStyle, width:'90px'}}>NIE</th>
+                <th style={{...thStyle, minWidth:'180px'}}>Nombre completo</th>
+                <th style={{...thStyle, width:'55px', textAlign:'center'}}>Sexo</th>
+                <th style={{...thStyle, width:'60px', textAlign:'center'}}>Grado</th>
+                <th style={{...thStyle, width:'70px', textAlign:'center'}}>Sección</th>
                 {es4C && (
                   <>
-                    <th style={{width:'90px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Fecha Nac.</th>
-                    <th style={{width:'45px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Edad</th>
-                    <th style={{width:'150px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Responsable</th>
-                    <th style={{width:'90px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>DUI</th>
-                    <th style={{width:'90px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Teléfono</th>
-                    <th style={{width:'120px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Dirección</th>
-                    <th style={{width:'80px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Alergias</th>
+                    <th style={{...thStyle, width:'100px'}}>Fecha Nac.</th>
+                    <th style={{...thStyle, width:'50px', textAlign:'center'}}>Edad</th>
+                    <th style={{...thStyle, minWidth:'160px'}}>Responsable</th>
+                    <th style={{...thStyle, width:'100px'}}>DUI</th>
+                    <th style={{...thStyle, width:'100px'}}>Teléfono</th>
+                    <th style={{...thStyle, minWidth:'120px'}}>Dirección</th>
+                    <th style={{...thStyle, width:'80px'}}>Alergias</th>
                   </>
                 )}
-                <th style={{width:'130px', background:'#1a73e8', color:'white', padding:'11px 8px', whiteSpace:'nowrap'}}>Acciones</th>
+                <th style={{...thStyle, width:'90px', textAlign:'center'}}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {alumnos.map((a, index) => (
                 <tr key={a.id} style={{background: index % 2 === 0 ? 'white' : '#f5f7fa'}}>
-                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{index + 1}</td>
-                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.nie}</td>
-                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.apellido}, {a.nombre}</td>
-                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', textAlign:'center'}}>{a.sexo}</td>
-                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', textAlign:'center'}}>{a.grados?.nombre}</td>
-                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', textAlign:'center'}}>{a.grados?.seccion}</td>
+                  <td style={{...tdStyle, textAlign:'center'}}>{index + 1}</td>
+                  <td style={tdStyle}>{a.nie}</td>
+                  <td style={tdStyle}>{a.apellido}, {a.nombre}</td>
+                  <td style={{...tdStyle, textAlign:'center'}}>{a.sexo}</td>
+                  <td style={{...tdStyle, textAlign:'center'}}>{a.grados?.nombre}</td>
+                  <td style={{...tdStyle, textAlign:'center'}}>{a.grados?.seccion}</td>
                   {es4C && (
                     <>
-                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.fecha_nacimiento}</td>
-                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', textAlign:'center'}}>{a.edad}</td>
-                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.responsables?.nombre} {a.responsables?.apellido}</td>
-                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.responsables?.dui}</td>
-                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.responsables?.telefono}</td>
-                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.responsables?.direccion || '-'}</td>
-                      <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.alergias || '-'}</td>
+                      <td style={tdStyle}>{a.fecha_nacimiento}</td>
+                      <td style={{...tdStyle, textAlign:'center'}}>{a.edad}</td>
+                      <td style={tdStyle}>{a.responsables?.nombre} {a.responsables?.apellido}</td>
+                      <td style={tdStyle}>{a.responsables?.dui}</td>
+                      <td style={tdStyle}>{a.responsables?.telefono}</td>
+                      <td style={tdStyle}>{a.responsables?.direccion || '-'}</td>
+                      <td style={tdStyle}>{a.alergias || '-'}</td>
                     </>
                   )}
-                  <td style={{padding:'10px 8px', borderBottom:'1px solid #edf2f7'}}>
-                    <div style={{display:'flex', gap:'4px', alignItems:'center'}}>
-                      <button className="btn btn-primary" style={{padding:'5px 10px', fontSize:'12px', whiteSpace:'nowrap'}} onClick={() => editarAlumno(a)}>✏️ Editar</button>
-                      <button className="btn btn-danger" style={{padding:'5px 10px', fontSize:'12px', whiteSpace:'nowrap'}} onClick={() => eliminarAlumno(a.id)}>🗑️ Eliminar</button>
+                  <td style={{...tdStyle, textAlign:'center'}}>
+                    <div style={{display:'flex', gap:'6px', alignItems:'center', justifyContent:'center'}}>
+                      <button className="btn btn-primary" title="Editar" style={{padding:'5px 10px', fontSize:'16px'}} onClick={() => editarAlumno(a)}>✏️</button>
+                      <button className="btn btn-danger" title="Eliminar" style={{padding:'5px 10px', fontSize:'16px'}} onClick={() => eliminarAlumno(a.id)}>🗑️</button>
                     </div>
                   </td>
                 </tr>

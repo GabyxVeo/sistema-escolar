@@ -117,20 +117,21 @@ function Reportes() {
         Grado 4 — Sección "C"
       </p>
 
-      <div className="card" style={{textAlign:'center'}}>
+      {/* Card filtros más angosto y centrado */}
+      <div className="card" style={{textAlign:'center', maxWidth:'400px', margin:'0 auto 20px auto'}}>
         <div style={{display:'flex', justifyContent:'center', gap:'20px', flexWrap:'wrap'}}>
           <div>
-            <label style={{fontWeight:'bold', display:'block', marginBottom:'5px'}}>Mes</label>
+            <label style={{fontWeight:'bold', display:'block', marginBottom:'5px', fontSize:'15px'}}>Mes</label>
             <select value={mes} onChange={e => setMes(e.target.value)}
-              style={{padding:'8px', borderRadius:'6px', border:'1px solid #ddd', fontSize:'14px'}}>
+              style={{padding:'8px', borderRadius:'6px', border:'1px solid #ddd', fontSize:'15px'}}>
               <option value="">-- Seleccionar mes --</option>
               {meses.map(m => <option key={m.valor} value={m.valor}>{m.nombre}</option>)}
             </select>
           </div>
           <div>
-            <label style={{fontWeight:'bold', display:'block', marginBottom:'5px'}}>Año</label>
+            <label style={{fontWeight:'bold', display:'block', marginBottom:'5px', fontSize:'15px'}}>Año</label>
             <input type="number" value={anio} onChange={e => setAnio(e.target.value)}
-              style={{padding:'8px', borderRadius:'6px', border:'1px solid #ddd', fontSize:'14px', width:'100px'}} />
+              style={{padding:'8px', borderRadius:'6px', border:'1px solid #ddd', fontSize:'15px', width:'100px'}} />
           </div>
         </div>
         <button className="btn btn-primary" style={{marginTop:'15px'}} onClick={generarReporte}>
@@ -141,33 +142,33 @@ function Reportes() {
       {reporte.length > 0 && (
         <div className="card" style={{overflowX:'auto'}}>
           <div style={{textAlign:'center', marginBottom:'15px'}}>
-            <p style={{fontWeight:'bold', fontSize:'17px'}}>CONTROL DE ASISTENCIA — AÑO: {anio}</p>
-            <p style={{fontSize:'14px'}}>GRADO: 4 Sección: "C" — {mesNombre.toUpperCase()}</p>
+            <p style={{fontWeight:'bold', fontSize:'18px'}}>CONTROL DE ASISTENCIA — AÑO: {anio}</p>
+            <p style={{fontSize:'15px'}}>GRADO: 4 Sección: "C" — {mesNombre.toUpperCase()}</p>
           </div>
 
           <table style={{
             borderCollapse:'collapse',
             width:'100%',
-            fontSize:'clamp(10px, 1vw, 13px)'
+            fontSize:'clamp(11px, 1.1vw, 14px)'
           }}>
             <thead>
               <tr>
-                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', minWidth:'28px', background:'#1a73e8', color:'white', fontSize:'clamp(10px, 1vw, 13px)'}}>N°</th>
-                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 8px', minWidth:'130px', textAlign:'left', background:'#1a73e8', color:'white', fontSize:'clamp(10px, 1vw, 13px)'}}>Nombre del Estudiante</th>
+                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', minWidth:'28px', background:'#1a73e8', color:'white', fontSize:'clamp(11px, 1.1vw, 14px)'}}>N°</th>
+                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 8px', minWidth:'140px', textAlign:'left', background:'#1a73e8', color:'white', fontSize:'clamp(11px, 1.1vw, 14px)'}}>Nombre del Estudiante</th>
                 {semanas.map((s, i) => (
                   <th key={i} colSpan={s.dias.length}
-                    style={{border:'1px solid #ccc', padding:'5px 3px', textAlign:'center', background:'#1565c0', color:'white', fontSize:'clamp(9px, 0.9vw, 12px)'}}>
+                    style={{border:'1px solid #ccc', padding:'5px 3px', textAlign:'center', background:'#1565c0', color:'white', fontSize:'clamp(10px, 1vw, 13px)'}}>
                     Semana {s.numero}<br/>({s.label})
                   </th>
                 ))}
-                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#e8f5e9', color:'#2e7d32', minWidth:'36px', fontSize:'clamp(10px, 1vw, 13px)'}}>✅ A</th>
-                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#fff3e0', color:'#e65100', minWidth:'36px', fontSize:'clamp(10px, 1vw, 13px)'}}>🟡 P</th>
-                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#ffebee', color:'#c62828', minWidth:'44px', fontSize:'clamp(10px, 1vw, 13px)'}}>❌ PSIN</th>
-                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#1a73e8', color:'white', minWidth:'55px', fontSize:'clamp(10px, 1vw, 13px)'}}>% Asist.</th>
+                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#e8f5e9', color:'#2e7d32', minWidth:'36px', fontSize:'clamp(11px, 1.1vw, 14px)'}}>✅ A</th>
+                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#fff3e0', color:'#e65100', minWidth:'36px', fontSize:'clamp(11px, 1.1vw, 14px)'}}>🟡 P</th>
+                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#ffebee', color:'#c62828', minWidth:'44px', fontSize:'clamp(11px, 1.1vw, 14px)'}}>❌ PSIN</th>
+                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#1a73e8', color:'white', minWidth:'55px', fontSize:'clamp(11px, 1.1vw, 14px)'}}>% Asist.</th>
               </tr>
               <tr>
                 {semanas.map(s => s.dias.map(d => (
-                  <th key={d.fecha} style={{border:'1px solid #ccc', padding:'5px 2px', textAlign:'center', background:'#1976d2', color:'white', fontSize:'clamp(10px, 1vw, 13px)', fontWeight:'bold', minWidth:'28px'}}>
+                  <th key={d.fecha} style={{border:'1px solid #ccc', padding:'5px 2px', textAlign:'center', background:'#1976d2', color:'white', fontSize:'clamp(11px, 1.1vw, 14px)', fontWeight:'bold', minWidth:'28px'}}>
                     {d.label}
                   </th>
                 )))}
@@ -176,17 +177,17 @@ function Reportes() {
             <tbody>
               {reporte.map((a, idx) => (
                 <tr key={a.numero} style={{background: idx % 2 === 0 ? 'white' : '#f9f9f9'}}>
-                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', fontSize:'clamp(10px, 1vw, 13px)'}}>{a.numero}</td>
-                  <td style={{border:'1px solid #ccc', padding:'6px 8px', fontSize:'clamp(10px, 1vw, 13px)'}}>{a.nombre}</td>
+                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', fontSize:'clamp(11px, 1.1vw, 14px)'}}>{a.numero}</td>
+                  <td style={{border:'1px solid #ccc', padding:'6px 8px', fontSize:'clamp(11px, 1.1vw, 14px)'}}>{a.nombre}</td>
                   {semanas.map(s => s.dias.map(d => (
-                    <td key={d.fecha} style={{border:'1px solid #ccc', padding:'5px 2px', textAlign:'center', fontSize:'clamp(10px, 1vw, 13px)', ...colorEstado(a.asistenciaMap[d.fecha])}}>
+                    <td key={d.fecha} style={{border:'1px solid #ccc', padding:'5px 2px', textAlign:'center', fontSize:'clamp(11px, 1.1vw, 14px)', ...colorEstado(a.asistenciaMap[d.fecha])}}>
                       {a.asistenciaMap[d.fecha] || '-'}
                     </td>
                   )))}
-                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', color:'#2e7d32', fontWeight:'bold', fontSize:'clamp(10px, 1vw, 13px)'}}>{a.totalA}</td>
-                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', color:'#e65100', fontWeight:'bold', fontSize:'clamp(10px, 1vw, 13px)'}}>{a.totalP}</td>
-                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', color:'#c62828', fontWeight:'bold', fontSize:'clamp(10px, 1vw, 13px)'}}>{a.totalPSIN}</td>
-                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', fontWeight:'bold', fontSize:'clamp(10px, 1vw, 13px)',
+                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', color:'#2e7d32', fontWeight:'bold', fontSize:'clamp(11px, 1.1vw, 14px)'}}>{a.totalA}</td>
+                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', color:'#e65100', fontWeight:'bold', fontSize:'clamp(11px, 1.1vw, 14px)'}}>{a.totalP}</td>
+                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', color:'#c62828', fontWeight:'bold', fontSize:'clamp(11px, 1.1vw, 14px)'}}>{a.totalPSIN}</td>
+                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', fontWeight:'bold', fontSize:'clamp(11px, 1.1vw, 14px)',
                     color: a.porcentaje >= 75 ? '#2e7d32' : a.porcentaje >= 50 ? '#e65100' : '#c62828'}}>
                     {a.porcentaje}%
                   </td>
@@ -196,9 +197,9 @@ function Reportes() {
           </table>
 
           <div style={{marginTop:'20px', padding:'15px', background:'#f5f5f5', borderRadius:'8px'}}>
-            <p style={{fontWeight:'bold', fontSize:'15px'}}>Resumen del mes:</p>
-            <p style={{fontSize:'14px'}}>Total alumnos: {reporte.length}</p>
-            <p style={{fontSize:'14px'}}>Promedio de asistencia: {Math.round(reporte.reduce((acc, a) => acc + a.porcentaje, 0) / reporte.length)}%</p>
+            <p style={{fontWeight:'bold', fontSize:'16px'}}>Resumen del mes:</p>
+            <p style={{fontSize:'15px'}}>Total alumnos: {reporte.length}</p>
+            <p style={{fontSize:'15px'}}>Promedio de asistencia: {Math.round(reporte.reduce((acc, a) => acc + a.porcentaje, 0) / reporte.length)}%</p>
           </div>
         </div>
       )}
