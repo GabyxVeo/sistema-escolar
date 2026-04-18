@@ -91,7 +91,7 @@ function Asistencia() {
     <div style={{width:'100%'}}>
       <p className="titulo-pagina"><ClipboardCheck style={{marginRight:'8px'}} />Control de Asistencia</p>
 
-      <div className="card" style={{textAlign:'center'}}>
+      <div className="card" style={{textAlign:'center', maxWidth:'500px', margin:'0 auto 24px auto'}}>
         <p style={{fontSize:'20px', fontWeight:'bold', color:'#2c3e50'}}>Grado 4 — Sección "C"</p>
         {modoEdicion && (
           <p style={{color:'#e65100', fontSize:'15px', marginTop:'6px'}}>
@@ -107,7 +107,7 @@ function Asistencia() {
 
       {alumnos.length > 0 && (
         <>
-          <div className="card" style={{display:'flex', gap:'30px', alignItems:'center', justifyContent:'center'}}>
+          <div className="card" style={{display:'flex', gap:'30px', alignItems:'center', justifyContent:'center', maxWidth:'500px', margin:'0 auto 16px auto'}}>
             <span style={{color:'#2e7d32', fontWeight:'bold', fontSize:'17px'}}><CheckCircle style={{marginRight:'6px'}} />Asistencia (A): {totalA}</span>
             <span style={{color:'#e65100', fontWeight:'bold', fontSize:'17px'}}><AlertCircle style={{marginRight:'6px'}} />Permiso (P): {totalP}</span>
             <span style={{color:'#c62828', fontWeight:'bold', fontSize:'17px'}}><XCircle style={{marginRight:'6px'}} />PSIN: {totalPSIN}</span>
@@ -117,39 +117,39 @@ function Asistencia() {
             <table className="table-desktop">
               <thead>
                 <tr>
-                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'left', fontSize:'14px', whiteSpace:'nowrap'}}>N°</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'left', fontSize:'14px', whiteSpace:'nowrap'}}>Nombre del Estudiante</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'center', fontSize:'14px', whiteSpace:'nowrap'}}>A</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'center', fontSize:'14px', whiteSpace:'nowrap'}}>P</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'center', fontSize:'14px', whiteSpace:'nowrap'}}>PSIN</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'center', fontSize:'14px', whiteSpace:'nowrap'}}>Estado</th>
+                  <th style={{background:'#1a73e8', color:'white', padding:'10px', textAlign:'center', fontSize:'15px', whiteSpace:'nowrap'}}>N°</th>
+                  <th style={{background:'#1a73e8', color:'white', padding:'10px', textAlign:'left', fontSize:'15px', whiteSpace:'nowrap', width:'175px'}}>Nombre del Estudiante</th>
+                  <th style={{background:'#1a73e8', color:'white', padding:'10px 6px', textAlign:'center', fontSize:'15px', whiteSpace:'nowrap'}}>A</th>
+                  <th style={{background:'#1a73e8', color:'white', padding:'10px 6px', textAlign:'center', fontSize:'15px', whiteSpace:'nowrap'}}>P</th>
+                  <th style={{background:'#1a73e8', color:'white', padding:'10px 6px', textAlign:'center', fontSize:'15px', whiteSpace:'nowrap'}}>PSIN</th>
+                  <th style={{background:'#1a73e8', color:'white', padding:'10px 6px', textAlign:'center', fontSize:'15px', whiteSpace:'nowrap'}}>Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {alumnos.map((a, index) => (
                   <tr key={a.id}>
-                    <td style={{padding:'12px', fontSize:'14px', borderBottom:'1px solid #edf2f7'}}>{index + 1}</td>
-                    <td style={{padding:'12px', fontSize:'14px', borderBottom:'1px solid #edf2f7', whiteSpace:'nowrap'}}>{a.apellido}, {a.nombre}</td>
-                    <td style={{padding:'12px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
+                    <td style={{padding:'10px', fontSize:'14px', borderBottom:'1px solid #edf2f7', textAlign:'center'}}>{index + 1}</td>
+                    <td style={{padding:'10px', fontSize:'15px', borderBottom:'1px solid #edf2f7', whiteSpace:'nowrap', width:'175px'}}>{a.apellido}, {a.nombre}</td>
+                    <td style={{padding:'10px 6px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
                       <input type="radio" name={`est-${a.id}`}
                         checked={asistencias[a.id] === 'A'}
                         onChange={() => cambiarEstado(a.id, 'A')}
                         style={{width:'18px', height:'18px', cursor:'pointer', margin:0, padding:0}} />
                     </td>
-                    <td style={{padding:'12px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
+                    <td style={{padding:'10px 6px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
                       <input type="radio" name={`est-${a.id}`}
                         checked={asistencias[a.id] === 'P'}
                         onChange={() => cambiarEstado(a.id, 'P')}
                         style={{width:'18px', height:'18px', cursor:'pointer', margin:0, padding:0}} />
                     </td>
-                    <td style={{padding:'12px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
+                    <td style={{padding:'10px 6px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
                       <input type="radio" name={`est-${a.id}`}
                         checked={asistencias[a.id] === 'PSIN'}
                         onChange={() => cambiarEstado(a.id, 'PSIN')}
                         style={{width:'18px', height:'18px', cursor:'pointer', margin:0, padding:0}} />
                     </td>
-                    <td style={{padding:'12px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
-                      <span style={{...colorEstado(asistencias[a.id]), padding:'5px 14px', borderRadius:'6px', fontSize:'14px'}}>
+                    <td style={{padding:'10px 6px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
+                      <span style={{...colorEstado(asistencias[a.id]), padding:'5px 8px', borderRadius:'6px', fontSize:'15px'}}>
                         {asistencias[a.id]}
                       </span>
                     </td>

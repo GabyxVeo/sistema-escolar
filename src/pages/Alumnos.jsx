@@ -173,15 +173,15 @@ function Alumnos() {
   const thStyle = {
     background: '#1a73e8',
     color: 'white',
-    padding: '11px 8px',
-    fontSize: '13px',
+    padding: '12px 10px',
+    fontSize: '15px',
     whiteSpace: 'nowrap'
   }
 
   const tdStyle = {
-    padding: '10px 8px',
+    padding: '11px 10px',
     borderBottom: '1px solid #edf2f7',
-    fontSize: '13px',
+    fontSize: '15px',
     verticalAlign: 'middle'
   }
 
@@ -266,7 +266,7 @@ function Alumnos() {
               <tr>
                 <th style={{...thStyle, width:'35px', textAlign:'center'}}>N°</th>
                 <th style={{...thStyle, width:'90px'}}>NIE</th>
-                <th style={{...thStyle, minWidth:'180px'}}>Nombre completo</th>
+                <th style={{...thStyle, width:'175px'}}>Nombre completo</th>
                 <th style={{...thStyle, width:'55px', textAlign:'center'}}>Sexo</th>
                 <th style={{...thStyle, width:'60px', textAlign:'center'}}>Grado</th>
                 <th style={{...thStyle, width:'70px', textAlign:'center'}}>Sección</th>
@@ -284,7 +284,7 @@ function Alumnos() {
                 <tr key={a.id}>
                   <td style={{...tdStyle, textAlign:'center'}}>{index + 1}</td>
                   <td style={tdStyle}>{a.nie}</td>
-                  <td style={tdStyle}>{a.apellido}, {a.nombre}</td>
+                  <td style={{...tdStyle, width:'175px'}}>{a.apellido}, {a.nombre}</td>
                   <td style={{...tdStyle, textAlign:'center'}}>{a.sexo}</td>
                   <td style={{...tdStyle, textAlign:'center'}}>{a.grados?.nombre}</td>
                   <td style={{...tdStyle, textAlign:'center'}}>{a.grados?.seccion}</td>

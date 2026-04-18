@@ -301,7 +301,7 @@ function Calificaciones() {
     <div>
       <p className="titulo-pagina"><FileText style={{marginRight:'8px'}} />Calificaciones — Ciudadanía y Valores</p>
 
-      <div className="card">
+      <div className="card" style={{maxWidth:'500px', margin:'0 auto 24px auto'}}>
         <div className="form-grid">
           <div>
             <label style={{fontWeight:'bold'}}>Grado</label>
@@ -344,17 +344,18 @@ function Calificaciones() {
               : 'Cuaderno 10% | Libro 30% | Exposición 20% | Examen 30% | Actividades 10%'
             }
           </p>
-          <table className="table-desktop">
+
+          <table className="table-desktop" style={{fontSize:'15px', tableLayout:'fixed', width:'100%'}}>
             <thead>
               <tr>
-                <th>N°</th>
-                <th>Nombre completo</th>
+                <th style={{width:'45px'}}>N°</th>
+                <th style={{width:'180px', paddingRight:'16px'}}>Nombre completo</th>
                 {TIPOS.map(t => (
-<th key={t.key} style={{textAlign:'center'}}>
+                  <th key={t.key} style={{textAlign:'center', width:'110px'}}>
                     <t.icon size={16} style={{marginRight:'4px', verticalAlign:'middle'}} />{t.label}
                   </th>
                 ))}
-                <th style={{textAlign:'center'}}><FileText style={{marginRight:'6px'}} />Nota Final</th>
+                <th style={{textAlign:'center', width:'110px'}}><FileText style={{marginRight:'6px'}} />Nota Final</th>
               </tr>
             </thead>
             <tbody>
@@ -363,17 +364,17 @@ function Calificaciones() {
                 return (
                   <tr key={a.id}>
                     <td>{index + 1}</td>
-                    <td>{a.apellido}, {a.nombre}</td>
+                    <td style={{width:'180px', fontSize:'16px', paddingRight:'16px'}}>{a.apellido}, {a.nombre}</td>
                     {TIPOS.map(t => (
-                      <td key={t.key} style={{textAlign:'center'}}>
+                      <td key={t.key} style={{textAlign:'center', width:'110px', padding:'8px 0'}}>
                         <input type="number" min="1" max="10" step="0.1"
                           placeholder="1-10"
                           value={notas[a.id]?.[t.key] || ''}
                           onChange={e => setNotas({...notas, [a.id]: {...notas[a.id], [t.key]: e.target.value}})}
-                          style={{width:'65px', textAlign:'center'}} />
+                          style={{width:'85px', textAlign:'center', boxSizing:'border-box'}} />
                       </td>
                     ))}
-                    <td style={{textAlign:'center', fontWeight:'bold', fontSize:'14px',
+                    <td style={{textAlign:'center', fontWeight:'bold', fontSize:'14px', width:'110px',
                       color: nota === null ? 'gray' : nota >= 6 ? 'green' : 'red'}}>
                       {nota === null ? '-' : nota}
                     </td>
