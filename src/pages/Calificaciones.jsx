@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType, AlignmentType, BorderStyle, HeightRule } from 'docx'
 import { saveAs } from 'file-saver'
+import { FileText, BookOpen, Mic, Save, FileDown } from 'lucide-react'
 
 function Calificaciones() {
   const [grados, setGrados] = useState([])
@@ -13,18 +14,18 @@ function Calificaciones() {
   const materia = 'Ciudadanía y Valores'
 
   const TIPOS_4 = [
-    { key: 'cuaderno', label: 'Cuaderno', emoji: '📓', peso: 0.20 },
-    { key: 'exposicion', label: 'Exposición', emoji: '🎤', peso: 0.30 },
-    { key: 'examen', label: 'Examen Trimestral', emoji: '📝', peso: 0.30 },
-    { key: 'actividades', label: 'Actividades', emoji: '✏️', peso: 0.20 }
+    { key: 'cuaderno', label: 'Cuaderno', icon: BookOpen, peso: 0.20 },
+    { key: 'exposicion', label: 'Exposición', icon: Mic, peso: 0.30 },
+    { key: 'examen', label: 'Examen Trimestral', icon: FileText, peso: 0.30 },
+    { key: 'actividades', label: 'Actividades', icon: FileText, peso: 0.20 }
   ]
 
   const TIPOS_OTROS = [
-    { key: 'cuaderno', label: 'Cuaderno', emoji: '📓', peso: 0.10 },
-    { key: 'libro', label: 'Libro', emoji: '📚', peso: 0.30 },
-    { key: 'exposicion', label: 'Exposición', emoji: '🎤', peso: 0.20 },
-    { key: 'examen', label: 'Examen Trimestral', emoji: '📝', peso: 0.30 },
-    { key: 'actividades', label: 'Actividades', emoji: '✏️', peso: 0.10 }
+    { key: 'cuaderno', label: 'Cuaderno', icon: BookOpen, peso: 0.10 },
+    { key: 'libro', label: 'Libro', icon: BookOpen, peso: 0.30 },
+    { key: 'exposicion', label: 'Exposición', icon: Mic, peso: 0.20 },
+    { key: 'examen', label: 'Examen Trimestral', icon: FileText, peso: 0.30 },
+    { key: 'actividades', label: 'Actividades', icon: FileText, peso: 0.10 }
   ]
 
   const gradoActual = grados.find(g => g.id === parseInt(gradoSeleccionado))
@@ -298,7 +299,7 @@ function Calificaciones() {
 
   return (
     <div>
-      <p className="titulo-pagina">📝 Calificaciones — Ciudadanía y Valores</p>
+      <p className="titulo-pagina"><FileText style={{marginRight:'8px'}} />Calificaciones — Ciudadanía y Valores</p>
 
       <div className="card">
         <div className="form-grid">
@@ -343,18 +344,17 @@ function Calificaciones() {
               : 'Cuaderno 10% | Libro 30% | Exposición 20% | Examen 30% | Actividades 10%'
             }
           </p>
-          <table>
+          <table className="table-desktop">
             <thead>
               <tr>
                 <th>N°</th>
                 <th>Nombre completo</th>
                 {TIPOS.map(t => (
-                  <th key={t.key} style={{textAlign:'center'}}>
-                    {t.emoji} {t.label}<br/>
-                    <span style={{fontSize:'11px', fontWeight:'normal'}}>({t.peso * 100}%)</span>
+<th key={t.key} style={{textAlign:'center'}}>
+                    <t.icon size={16} style={{marginRight:'4px', verticalAlign:'middle'}} />{t.label}
                   </th>
                 ))}
-                <th style={{textAlign:'center'}}>📊 Nota Final</th>
+                <th style={{textAlign:'center'}}><FileText style={{marginRight:'6px'}} />Nota Final</th>
               </tr>
             </thead>
             <tbody>
@@ -373,7 +373,7 @@ function Calificaciones() {
                           style={{width:'65px', textAlign:'center'}} />
                       </td>
                     ))}
-                    <td style={{textAlign:'center', fontWeight:'bold', fontSize:'16px',
+                    <td style={{textAlign:'center', fontWeight:'bold', fontSize:'14px',
                       color: nota === null ? 'gray' : nota >= 6 ? 'green' : 'red'}}>
                       {nota === null ? '-' : nota}
                     </td>
@@ -382,12 +382,48 @@ function Calificaciones() {
               })}
             </tbody>
           </table>
-          <div style={{textAlign:'center', marginTop:'20px', display:'flex', gap:'15px', justifyContent:'center'}}>
+
+          <div className="table-mobile">
+            {alumnos.map((a, index) => {
+              const nota = calcularNota(a.id)
+              return (
+                <div key={a.id} className="table-row">
+                  <div className="table-row-header">
+                    <span className="table-row-number">{index + 1}</span>
+                    <span className="table-row-title">{a.apellido}, {a.nombre}</span>
+                  </div>
+                  <div className="table-row-data">
+                    {TIPOS.map(t => (
+                      <div key={t.key} className="table-row-item">
+                        <span className="table-row-label"><t.icon size={14} style={{marginRight:'4px'}} />{t.label}</span>
+                        <input type="number" min="1" max="10" step="0.1"
+                          placeholder="1-10"
+                          value={notas[a.id]?.[t.key] || ''}
+                          onChange={e => setNotas({...notas, [a.id]: {...notas[a.id], [t.key]: e.target.value}})}
+                          style={{width:'100%', textAlign:'center', padding:'10px'}} />
+                      </div>
+                    ))}
+                    <div className="table-row-item">
+                      <span className="table-row-label"><FileText size={14} style={{marginRight:'4px'}} />Nota Final</span>
+                      <span style={{
+                        fontWeight: 'bold', fontSize: '1.25rem', textAlign: 'center',
+                        color: nota === null ? 'gray' : nota >= 6 ? 'green' : 'red'
+                      }}>
+                        {nota === null ? '-' : nota}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <div style={{textAlign:'center', marginTop:'20px', display:'flex', gap:'15px', justifyContent:'center', flexWrap:'wrap'}}>
             <button className="btn btn-success" onClick={guardarCalificaciones}>
-              💾 Guardar Calificaciones
+              <Save style={{marginRight:'6px'}} />Guardar
             </button>
             <button className="btn btn-primary" onClick={generarWord}>
-              📄 Generar Word
+              <FileDown style={{marginRight:'6px'}} />Generar Word
             </button>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
+import { ClipboardCheck, CheckCircle, XCircle, AlertCircle, Save, Pencil } from 'lucide-react'
 
 function Asistencia() {
   const [alumnos, setAlumnos] = useState([])
@@ -88,13 +89,13 @@ function Asistencia() {
 
   return (
     <div style={{width:'100%'}}>
-      <p className="titulo-pagina">📋 Control de Asistencia</p>
+      <p className="titulo-pagina"><ClipboardCheck style={{marginRight:'8px'}} />Control de Asistencia</p>
 
       <div className="card" style={{textAlign:'center'}}>
         <p style={{fontSize:'20px', fontWeight:'bold', color:'#2c3e50'}}>Grado 4 — Sección "C"</p>
         {modoEdicion && (
           <p style={{color:'#e65100', fontSize:'15px', marginTop:'6px'}}>
-            ✏️ Editando asistencia ya registrada para esta fecha
+            <Pencil style={{marginRight:'6px'}} />Editando asistencia ya registrada para esta fecha
           </p>
         )}
         <div style={{marginTop:'12px', display:'flex', alignItems:'center', justifyContent:'center', gap:'12px'}}>
@@ -107,28 +108,28 @@ function Asistencia() {
       {alumnos.length > 0 && (
         <>
           <div className="card" style={{display:'flex', gap:'30px', alignItems:'center', justifyContent:'center'}}>
-            <span style={{color:'#2e7d32', fontWeight:'bold', fontSize:'17px'}}>✅ Asistencia (A): {totalA}</span>
-            <span style={{color:'#e65100', fontWeight:'bold', fontSize:'17px'}}>🟡 Permiso (P): {totalP}</span>
-            <span style={{color:'#c62828', fontWeight:'bold', fontSize:'17px'}}>❌ PSIN: {totalPSIN}</span>
+            <span style={{color:'#2e7d32', fontWeight:'bold', fontSize:'17px'}}><CheckCircle style={{marginRight:'6px'}} />Asistencia (A): {totalA}</span>
+            <span style={{color:'#e65100', fontWeight:'bold', fontSize:'17px'}}><AlertCircle style={{marginRight:'6px'}} />Permiso (P): {totalP}</span>
+            <span style={{color:'#c62828', fontWeight:'bold', fontSize:'17px'}}><XCircle style={{marginRight:'6px'}} />PSIN: {totalPSIN}</span>
           </div>
 
           <div className="card">
-            <table style={{width:'100%', borderCollapse:'collapse', fontSize:'16px'}}>
+            <table className="table-desktop">
               <thead>
                 <tr>
-                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'left', fontSize:'16px', whiteSpace:'nowrap'}}>N°</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'left', fontSize:'16px', whiteSpace:'nowrap'}}>Nombre del Estudiante</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'center', fontSize:'16px', whiteSpace:'nowrap'}}>A</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'center', fontSize:'16px', whiteSpace:'nowrap'}}>P</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'center', fontSize:'16px', whiteSpace:'nowrap'}}>PSIN</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'center', fontSize:'16px', whiteSpace:'nowrap'}}>Estado</th>
+                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'left', fontSize:'14px', whiteSpace:'nowrap'}}>N°</th>
+                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'left', fontSize:'14px', whiteSpace:'nowrap'}}>Nombre del Estudiante</th>
+                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'center', fontSize:'14px', whiteSpace:'nowrap'}}>A</th>
+                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'center', fontSize:'14px', whiteSpace:'nowrap'}}>P</th>
+                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'center', fontSize:'14px', whiteSpace:'nowrap'}}>PSIN</th>
+                  <th style={{background:'#1a73e8', color:'white', padding:'13px 12px', textAlign:'center', fontSize:'14px', whiteSpace:'nowrap'}}>Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {alumnos.map((a, index) => (
-                  <tr key={a.id} style={{background: index % 2 === 0 ? 'white' : '#f5f7fa'}}>
-                    <td style={{padding:'12px', fontSize:'16px', borderBottom:'1px solid #edf2f7'}}>{index + 1}</td>
-                    <td style={{padding:'12px', fontSize:'16px', borderBottom:'1px solid #edf2f7', whiteSpace:'nowrap'}}>{a.apellido}, {a.nombre}</td>
+                  <tr key={a.id}>
+                    <td style={{padding:'12px', fontSize:'14px', borderBottom:'1px solid #edf2f7'}}>{index + 1}</td>
+                    <td style={{padding:'12px', fontSize:'14px', borderBottom:'1px solid #edf2f7', whiteSpace:'nowrap'}}>{a.apellido}, {a.nombre}</td>
                     <td style={{padding:'12px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
                       <input type="radio" name={`est-${a.id}`}
                         checked={asistencias[a.id] === 'A'}
@@ -148,7 +149,7 @@ function Asistencia() {
                         style={{width:'18px', height:'18px', cursor:'pointer', margin:0, padding:0}} />
                     </td>
                     <td style={{padding:'12px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
-                      <span style={{...colorEstado(asistencias[a.id]), padding:'5px 14px', borderRadius:'6px', fontSize:'15px'}}>
+                      <span style={{...colorEstado(asistencias[a.id]), padding:'5px 14px', borderRadius:'6px', fontSize:'14px'}}>
                         {asistencias[a.id]}
                       </span>
                     </td>
@@ -156,9 +157,56 @@ function Asistencia() {
                 ))}
               </tbody>
             </table>
+
+            <div className="table-mobile">
+              {alumnos.map((a, index) => (
+                <div key={a.id} className="table-row">
+                  <div className="table-row-header">
+                    <span className="table-row-number">{index + 1}</span>
+                    <span className="table-row-title">{a.apellido}, {a.nombre}</span>
+                  </div>
+                  <div className="table-row-data" style={{gridTemplateColumns: 'repeat(3, 1fr)'}}>
+                    <div className="table-row-item" style={{alignItems: 'center'}}>
+                      <label style={{cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px'}}>
+                        <input type="radio" name={`est-mobile-${a.id}`}
+                          checked={asistencias[a.id] === 'A'}
+                          onChange={() => cambiarEstado(a.id, 'A')}
+                          style={{width:'20px', height:'20px', cursor:'pointer'}} />
+                        <span style={{color: '#2e7d32', fontWeight: 'bold'}}>A</span>
+                      </label>
+                    </div>
+                    <div className="table-row-item" style={{alignItems: 'center'}}>
+                      <label style={{cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px'}}>
+                        <input type="radio" name={`est-mobile-${a.id}`}
+                          checked={asistencias[a.id] === 'P'}
+                          onChange={() => cambiarEstado(a.id, 'P')}
+                          style={{width:'20px', height:'20px', cursor:'pointer'}} />
+                        <span style={{color: '#e65100', fontWeight: 'bold'}}>P</span>
+                      </label>
+                    </div>
+                    <div className="table-row-item" style={{alignItems: 'center'}}>
+                      <label style={{cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px'}}>
+                        <input type="radio" name={`est-mobile-${a.id}`}
+                          checked={asistencias[a.id] === 'PSIN'}
+                          onChange={() => cambiarEstado(a.id, 'PSIN')}
+                          style={{width:'20px', height:'20px', cursor:'pointer'}} />
+                        <span style={{color: '#c62828', fontWeight: 'bold'}}>PSIN</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div className="table-row-item">
+                    <span className="table-row-label">Estado Actual</span>
+                    <span style={{...colorEstado(asistencias[a.id]), padding:'8px 16px', borderRadius:'8px', fontWeight: 'bold', textAlign: 'center'}}>
+                      {asistencias[a.id]}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <div style={{textAlign:'center', marginTop:'20px'}}>
               <button className="btn btn-success" style={{padding:'12px 40px', fontSize:'16px'}} onClick={guardarAsistencia}>
-                {modoEdicion ? '✏️ Actualizar Asistencia' : '💾 Guardar Asistencia del Día'}
+                {modoEdicion ? <><Pencil style={{marginRight:'6px'}} />Actualizar Asistencia</> : <><Save style={{marginRight:'6px'}} />Guardar Asistencia del Día</>}
               </button>
             </div>
           </div>

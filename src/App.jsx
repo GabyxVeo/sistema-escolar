@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
+import { School, Users, ClipboardCheck, FileText, BarChart3 } from 'lucide-react'
 import Alumnos from './pages/Alumnos'
 import Asistencia from './pages/Asistencia'
 import Calificaciones from './pages/Calificaciones'
@@ -10,15 +11,15 @@ function NavBar() {
   const location = useLocation()
   const esInicio = location.pathname === '/'
   const links = [
-    { to: '/alumnos', label: '👨‍🎓 Alumnos' },
-    { to: '/asistencia', label: '📋 Asistencia' },
-    { to: '/calificaciones', label: '📝 Calificaciones' },
-    { to: '/reportes', label: '📊 Reportes' }
+    { to: '/alumnos', icon: Users, label: 'Alumnos' },
+    { to: '/asistencia', icon: ClipboardCheck, label: 'Asistencia' },
+    { to: '/calificaciones', icon: FileText, label: 'Calificaciones' },
+    { to: '/reportes', icon: BarChart3, label: 'Reportes' }
   ]
   return (
     <nav className="navbar">
       <Link to="/" style={{textDecoration:'none'}}>
-        <h1>🏫 Sistema Escolar</h1>
+        <h1><School size={28} style={{marginRight:'10px', verticalAlign:'middle'}} />Sistema Escolar</h1>
       </Link>
       {!esInicio && (
         <ul>
@@ -26,8 +27,12 @@ function NavBar() {
             <li key={link.to}>
               <Link to={link.to}
                 style={{
-                  background: location.pathname === link.to ? 'rgba(255,255,255,0.25)' : 'transparent'
+                  background: location.pathname === link.to ? 'rgba(255,255,255,0.25)' : 'transparent',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}>
+                <link.icon size={18} />
                 {link.label}
               </Link>
             </li>

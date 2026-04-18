@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
+import { Users, Pencil, Trash2, UserPlus, Contact, Phone, MapPin, AlertTriangle, X, User as UserIcon } from 'lucide-react'
 
 function Alumnos() {
   const [alumnos, setAlumnos] = useState([])
@@ -7,6 +8,7 @@ function Alumnos() {
   const [gradoFiltro, setGradoFiltro] = useState('')
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [editandoId, setEditandoId] = useState(null)
+  const [modalAlumno, setModalAlumno] = useState(null)
 
   const formularioVacio = {
     nie: '', nombre: '', apellido: '', fecha_nacimiento: '',
@@ -185,7 +187,7 @@ function Alumnos() {
 
   return (
     <div style={{width:'100%'}}>
-      <p className="titulo-pagina">👨‍🎓 Nómina de Alumnos</p>
+      <p className="titulo-pagina"><Users style={{marginRight:'8px'}} />Nómina de Alumnos</p>
 
       <div className="card" style={{textAlign:'center', maxWidth:'550px', margin:'0 auto 16px auto'}}>
         <div style={{display:'flex', justifyContent:'center', alignItems:'center', gap:'15px', flexWrap:'wrap'}}>
@@ -217,7 +219,7 @@ function Alumnos() {
         {mostrarFormulario && (
           <div style={{marginTop:'20px', textAlign:'left'}}>
             <p style={{fontWeight:'bold', marginBottom:'10px', fontSize:'15px'}}>
-              {editandoId ? '✏️ Editar Alumno' : '📋 Datos del Alumno'}
+              {editandoId ? <><Pencil style={{marginRight:'6px'}} />Editar Alumno</> : <><UserPlus style={{marginRight:'6px'}} />Datos del Alumno</>}
             </p>
             <div className="form-grid">
               <input placeholder="NIE *" value={formulario.nie} onChange={e => setFormulario({...formulario, nie: e.target.value})} />
@@ -238,7 +240,7 @@ function Alumnos() {
 
             {es4C && (
               <>
-                <p style={{fontWeight:'bold', margin:'15px 0 10px', fontSize:'15px'}}>👨‍👩‍👧 Datos del Responsable</p>
+                <p style={{fontWeight:'bold', margin:'15px 0 10px', fontSize:'15px'}}><Contact style={{marginRight:'6px'}} />Datos del Responsable</p>
                 <div className="form-grid">
                   <input placeholder="Nombre del responsable" value={formulario.responsable_nombre} onChange={e => setFormulario({...formulario, responsable_nombre: e.target.value})} />
                   <input placeholder="Apellido del responsable" value={formulario.responsable_apellido} onChange={e => setFormulario({...formulario, responsable_apellido: e.target.value})} />
@@ -251,21 +253,15 @@ function Alumnos() {
             )}
 
             <button className="btn btn-success" style={{marginTop:'10px'}} onClick={guardarAlumno}>
-              💾 {editandoId ? 'Actualizar Alumno' : 'Guardar Alumno'}
+              <Users style={{marginRight:'6px'}} />{editandoId ? 'Actualizar Alumno' : 'Guardar Alumno'}
             </button>
           </div>
         )}
       </div>
 
-      {gradoFiltro && (
-        <div className="card" style={{overflowX:'auto'}}>
-          <table style={{
-            fontSize: '13px',
-            width: '100%',
-            borderCollapse: 'collapse',
-            borderRadius: '8px',
-            overflow: 'hidden'
-          }}>
+{gradoFiltro && (
+        <div className="card">
+          <table className="table-desktop">
             <thead>
               <tr>
                 <th style={{...thStyle, width:'35px', textAlign:'center'}}>N°</th>
@@ -278,11 +274,6 @@ function Alumnos() {
                   <>
                     <th style={{...thStyle, width:'100px'}}>Fecha Nac.</th>
                     <th style={{...thStyle, width:'50px', textAlign:'center'}}>Edad</th>
-                    <th style={{...thStyle, minWidth:'160px'}}>Responsable</th>
-                    <th style={{...thStyle, width:'100px'}}>DUI</th>
-                    <th style={{...thStyle, width:'100px'}}>Teléfono</th>
-                    <th style={{...thStyle, minWidth:'120px'}}>Dirección</th>
-                    <th style={{...thStyle, width:'80px'}}>Alergias</th>
                   </>
                 )}
                 <th style={{...thStyle, width:'90px', textAlign:'center'}}>Acciones</th>
@@ -290,7 +281,7 @@ function Alumnos() {
             </thead>
             <tbody>
               {alumnos.map((a, index) => (
-                <tr key={a.id} style={{background: index % 2 === 0 ? 'white' : '#f5f7fa'}}>
+                <tr key={a.id}>
                   <td style={{...tdStyle, textAlign:'center'}}>{index + 1}</td>
                   <td style={tdStyle}>{a.nie}</td>
                   <td style={tdStyle}>{a.apellido}, {a.nombre}</td>
@@ -301,30 +292,203 @@ function Alumnos() {
                     <>
                       <td style={tdStyle}>{a.fecha_nacimiento}</td>
                       <td style={{...tdStyle, textAlign:'center'}}>{a.edad}</td>
-                      <td style={tdStyle}>{a.responsables?.nombre} {a.responsables?.apellido}</td>
-                      <td style={tdStyle}>{a.responsables?.dui}</td>
-                      <td style={tdStyle}>{a.responsables?.telefono}</td>
-                      <td style={tdStyle}>{a.responsables?.direccion || '-'}</td>
-                      <td style={tdStyle}>{a.alergias || '-'}</td>
                     </>
                   )}
                   <td style={{...tdStyle, textAlign:'center'}}>
                     <div style={{display:'flex', gap:'6px', alignItems:'center', justifyContent:'center'}}>
-                      <button className="btn btn-primary" title="Editar" style={{padding:'5px 10px', fontSize:'16px'}} onClick={() => editarAlumno(a)}>✏️</button>
-                      <button className="btn btn-danger" title="Eliminar" style={{padding:'5px 10px', fontSize:'16px'}} onClick={() => eliminarAlumno(a.id)}>🗑️</button>
+                      <button className="btn btn-info" title="Ver detalles" style={{padding:'5px 10px', background:'#17a2b8', color:'white'}} onClick={() => setModalAlumno(a)}><UserIcon size={16} /></button>
+                      <button className="btn btn-primary" title="Editar" style={{padding:'5px 10px'}} onClick={() => editarAlumno(a)}><Pencil size={16} /></button>
+                      <button className="btn btn-danger" title="Eliminar" style={{padding:'5px 10px'}} onClick={() => eliminarAlumno(a.id)}><Trash2 size={16} /></button>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          <div className="table-mobile">
+            {alumnos.map((a, index) => (
+              <div key={a.id} className="table-row">
+                <div className="table-row-header">
+                  <span className="table-row-number">{index + 1}</span>
+                  <span className="table-row-title">{a.apellido}, {a.nombre}</span>
+                </div>
+                <div className="table-row-data">
+                  <div className="table-row-item">
+                    <span className="table-row-label">NIE</span>
+                    <span className="table-row-value">{a.nie}</span>
+                  </div>
+                  <div className="table-row-item">
+                    <span className="table-row-label">Sexo</span>
+                    <span className="table-row-value">{a.sexo || '-'}</span>
+                  </div>
+                  <div className="table-row-item">
+                    <span className="table-row-label">Grado</span>
+                    <span className="table-row-value">{a.grados?.nombre}</span>
+                  </div>
+                  <div className="table-row-item">
+                    <span className="table-row-label">Sección</span>
+                    <span className="table-row-value">{a.grados?.seccion}</span>
+                  </div>
+                  {es4C && (
+                    <>
+                      <div className="table-row-item">
+                        <span className="table-row-label">Fecha Nac.</span>
+                        <span className="table-row-value">{a.fecha_nacimiento || '-'}</span>
+                      </div>
+                      <div className="table-row-item">
+                        <span className="table-row-label">Edad</span>
+                        <span className="table-row-value">{a.edad || '-'}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="table-row-actions">
+                  <button className="btn btn-info" onClick={() => setModalAlumno(a)}><UserIcon size={16} />Detalles</button>
+                  <button className="btn btn-primary" onClick={() => editarAlumno(a)}><Pencil size={16} />Editar</button>
+                  <button className="btn btn-danger" onClick={() => eliminarAlumno(a.id)}><Trash2 size={16} /></button>
+                </div>
+              </div>
+            ))}
+          </div>
           {alumnos.length === 0 && <p style={{textAlign:'center', marginTop:'20px', color:'#999', fontSize:'15px'}}>No hay alumnos en este grado aún</p>}
         </div>
       )}
 
       {!gradoFiltro && (
         <div className="card" style={{textAlign:'center', color:'#999', fontSize:'16px'}}>
-          👆 Seleccioná un grado para ver la nómina
+          <Users style={{marginRight:'6px'}} />Seleccioná un grado para ver la nómina
+        </div>
+      )}
+
+      {modalAlumno && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000
+        }} onClick={() => setModalAlumno(null)}>
+          <div style={{
+            background: 'white', borderRadius: '16px', padding: '24px',
+            maxWidth: '500px', width: '90%', maxHeight: '90vh', overflow: 'auto',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.2)'
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+              <h2 style={{fontSize: '20px', fontWeight: 'bold', color: '#1a73e8', margin: 0}}>
+                <UserIcon style={{marginRight: '8px', verticalAlign: 'middle'}} />
+                {modalAlumno.apellido}, {modalAlumno.nombre}
+              </h2>
+              <button onClick={() => setModalAlumno(null)} style={{
+                background: 'none', border: 'none', cursor: 'pointer', padding: '4px'
+              }}>
+                <X size={24} />
+              </button>
+            </div>
+
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px'}}>
+              <div style={{
+                background: '#f8f9fa', borderRadius: '12px', padding: '16px',
+                display: 'flex', alignItems: 'center', gap: '12px'
+              }}>
+                <div style={{background: '#e3f2fd', borderRadius: '10px', padding: '10px'}}>
+                  <UserIcon size={20} color="#1976d2" />
+                </div>
+                <div>
+                  <p style={{fontSize: '11px', color: '#666', margin: 0}}>NIE</p>
+                  <p style={{fontSize: '14px', fontWeight: 'bold', color: '#333', margin: 0}}>{modalAlumno.nie}</p>
+                </div>
+              </div>
+
+              <div style={{
+                background: '#f8f9fa', borderRadius: '12px', padding: '16px',
+                display: 'flex', alignItems: 'center', gap: '12px'
+              }}>
+                <div style={{background: '#e3f2fd', borderRadius: '10px', padding: '10px'}}>
+                  <Users size={20} color="#1976d2" />
+                </div>
+                <div>
+                  <p style={{fontSize: '11px', color: '#666', margin: 0}}>Sexo</p>
+                  <p style={{fontSize: '14px', fontWeight: 'bold', color: '#333', margin: 0}}>{modalAlumno.sexo || '-'}</p>
+                </div>
+              </div>
+
+              <div style={{
+                background: '#f8f9fa', borderRadius: '12px', padding: '16px',
+                display: 'flex', alignItems: 'center', gap: '12px'
+              }}>
+                <div style={{background: '#fff3e0', borderRadius: '10px', padding: '10px'}}>
+                  <Contact size={20} color="#e65100" />
+                </div>
+                <div>
+                  <p style={{fontSize: '11px', color: '#666', margin: 0}}>Responsable</p>
+                  <p style={{fontSize: '14px', fontWeight: 'bold', color: '#333', margin: 0}}>
+                    {modalAlumno.responsables?.nombre} {modalAlumno.responsables?.apellido}
+                  </p>
+                </div>
+              </div>
+
+              <div style={{
+                background: '#f8f9fa', borderRadius: '12px', padding: '16px',
+                display: 'flex', alignItems: 'center', gap: '12px'
+              }}>
+                <div style={{background: '#fff3e0', borderRadius: '10px', padding: '10px'}}>
+                  <Contact size={20} color="#e65100" />
+                </div>
+                <div>
+                  <p style={{fontSize: '11px', color: '#666', margin: 0}}>DUI</p>
+                  <p style={{fontSize: '14px', fontWeight: 'bold', color: '#333', margin: 0}}>
+                    {modalAlumno.responsables?.dui || '-'}
+                  </p>
+                </div>
+              </div>
+
+              <div style={{
+                background: '#f8f9fa', borderRadius: '12px', padding: '16px',
+                display: 'flex', alignItems: 'center', gap: '12px'
+              }}>
+                <div style={{background: '#e8f5e9', borderRadius: '10px', padding: '10px'}}>
+                  <Phone size={20} color="#2e7d32" />
+                </div>
+                <div>
+                  <p style={{fontSize: '11px', color: '#666', margin: 0}}>Teléfono</p>
+                  <p style={{fontSize: '14px', fontWeight: 'bold', color: '#333', margin: 0}}>
+                    {modalAlumno.responsables?.telefono || '-'}
+                  </p>
+                </div>
+              </div>
+
+              <div style={{
+                background: '#f8f9fa', borderRadius: '12px', padding: '16px',
+                display: 'flex', alignItems: 'center', gap: '12px'
+              }}>
+                <div style={{background: '#e8f5e9', borderRadius: '10px', padding: '10px'}}>
+                  <MapPin size={20} color="#2e7d32" />
+                </div>
+                <div>
+                  <p style={{fontSize: '11px', color: '#666', margin: 0}}>Dirección</p>
+                  <p style={{fontSize: '14px', fontWeight: 'bold', color: '#333', margin: 0}}>
+                    {modalAlumno.responsables?.direccion || '-'}
+                  </p>
+                </div>
+              </div>
+
+              {(modalAlumno.alergias) && (
+                <div style={{
+                  background: '#ffebee', borderRadius: '12px', padding: '16px',
+                  display: 'flex', alignItems: 'center', gap: '12px', gridColumn: 'span 2'
+                }}>
+                  <div style={{background: '#ffcdd2', borderRadius: '10px', padding: '10px'}}>
+                    <AlertTriangle size={20} color="#c62828" />
+                  </div>
+                  <div>
+                    <p style={{fontSize: '11px', color: '#c62828', margin: 0}}>Alergias</p>
+                    <p style={{fontSize: '14px', fontWeight: 'bold', color: '#c62828', margin: 0}}>
+                      {modalAlumno.alergias}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

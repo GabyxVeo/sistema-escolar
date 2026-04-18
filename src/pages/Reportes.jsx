@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
+import { BarChart3, Loader2, CheckCircle, AlertCircle, XCircle } from 'lucide-react'
 
 function Reportes() {
   const [mes, setMes] = useState('')
@@ -112,7 +113,7 @@ function Reportes() {
 
   return (
     <div>
-      <p className="titulo-pagina">📊 Reporte Mensual de Asistencia</p>
+      <p className="titulo-pagina"><BarChart3 style={{marginRight:'8px'}} />Reporte Mensual de Asistencia</p>
       <p style={{textAlign:'center', fontSize:'15px', fontWeight:'bold', color:'#1a73e8', marginBottom:'20px'}}>
         Grado 4 — Sección "C"
       </p>
@@ -135,7 +136,7 @@ function Reportes() {
           </div>
         </div>
         <button className="btn btn-primary" style={{marginTop:'15px'}} onClick={generarReporte}>
-          {cargando ? '⏳ Cargando...' : '📊 Generar Reporte'}
+          {cargando ? <><Loader2 style={{marginRight:'6px', animation:'spin 1s linear infinite'}} className="spin" />Cargando...</> : <><BarChart3 style={{marginRight:'6px'}} />Generar Reporte</>}
         </button>
       </div>
 
@@ -146,29 +147,25 @@ function Reportes() {
             <p style={{fontSize:'15px'}}>GRADO: 4 Sección: "C" — {mesNombre.toUpperCase()}</p>
           </div>
 
-          <table style={{
-            borderCollapse:'collapse',
-            width:'100%',
-            fontSize:'clamp(11px, 1.1vw, 14px)'
-          }}>
+          <table className="table-desktop">
             <thead>
               <tr>
-                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', minWidth:'28px', background:'#1a73e8', color:'white', fontSize:'clamp(11px, 1.1vw, 14px)'}}>N°</th>
-                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 8px', minWidth:'140px', textAlign:'left', background:'#1a73e8', color:'white', fontSize:'clamp(11px, 1.1vw, 14px)'}}>Nombre del Estudiante</th>
+                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', minWidth:'28px'}}>N°</th>
+                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 8px', minWidth:'140px', textAlign:'left'}}>Nombre del Estudiante</th>
                 {semanas.map((s, i) => (
                   <th key={i} colSpan={s.dias.length}
-                    style={{border:'1px solid #ccc', padding:'5px 3px', textAlign:'center', background:'#1565c0', color:'white', fontSize:'clamp(10px, 1vw, 13px)'}}>
-                    Semana {s.numero}<br/>({s.label})
+                    style={{border:'1px solid #ccc', padding:'5px 3px', textAlign:'center', background:'#1565c0'}}>
+                    Sem {s.numero}<br/>({s.label})
                   </th>
                 ))}
-                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#e8f5e9', color:'#2e7d32', minWidth:'36px', fontSize:'clamp(11px, 1.1vw, 14px)'}}>✅ A</th>
-                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#fff3e0', color:'#e65100', minWidth:'36px', fontSize:'clamp(11px, 1.1vw, 14px)'}}>🟡 P</th>
-                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#ffebee', color:'#c62828', minWidth:'44px', fontSize:'clamp(11px, 1.1vw, 14px)'}}>❌ PSIN</th>
-                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#1a73e8', color:'white', minWidth:'55px', fontSize:'clamp(11px, 1.1vw, 14px)'}}>% Asist.</th>
+                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#e8f5e9', color:'#2e7d32', minWidth:'36px'}}>A</th>
+                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#fff3e0', color:'#e65100', minWidth:'36px'}}>P</th>
+                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#ffebee', color:'#c62828', minWidth:'44px'}}>PSIN</th>
+                <th rowSpan={2} style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', background:'#1a73e8', color:'white', minWidth:'55px'}}>%</th>
               </tr>
               <tr>
                 {semanas.map(s => s.dias.map(d => (
-                  <th key={d.fecha} style={{border:'1px solid #ccc', padding:'5px 2px', textAlign:'center', background:'#1976d2', color:'white', fontSize:'clamp(11px, 1.1vw, 14px)', fontWeight:'bold', minWidth:'28px'}}>
+                  <th key={d.fecha} style={{border:'1px solid #ccc', padding:'5px 2px', textAlign:'center', background:'#1976d2', color:'white', fontWeight:'bold', minWidth:'28px'}}>
                     {d.label}
                   </th>
                 )))}
@@ -176,18 +173,18 @@ function Reportes() {
             </thead>
             <tbody>
               {reporte.map((a, idx) => (
-                <tr key={a.numero} style={{background: idx % 2 === 0 ? 'white' : '#f9f9f9'}}>
-                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', fontSize:'clamp(11px, 1.1vw, 14px)'}}>{a.numero}</td>
-                  <td style={{border:'1px solid #ccc', padding:'6px 8px', fontSize:'clamp(11px, 1.1vw, 14px)'}}>{a.nombre}</td>
+                <tr key={a.numero}>
+                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center'}}>{a.numero}</td>
+                  <td style={{border:'1px solid #ccc', padding:'6px 8px'}}>{a.nombre}</td>
                   {semanas.map(s => s.dias.map(d => (
-                    <td key={d.fecha} style={{border:'1px solid #ccc', padding:'5px 2px', textAlign:'center', fontSize:'clamp(11px, 1.1vw, 14px)', ...colorEstado(a.asistenciaMap[d.fecha])}}>
+                    <td key={d.fecha} style={{border:'1px solid #ccc', padding:'5px 2px', textAlign:'center', ...colorEstado(a.asistenciaMap[d.fecha])}}>
                       {a.asistenciaMap[d.fecha] || '-'}
                     </td>
                   )))}
-                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', color:'#2e7d32', fontWeight:'bold', fontSize:'clamp(11px, 1.1vw, 14px)'}}>{a.totalA}</td>
-                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', color:'#e65100', fontWeight:'bold', fontSize:'clamp(11px, 1.1vw, 14px)'}}>{a.totalP}</td>
-                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', color:'#c62828', fontWeight:'bold', fontSize:'clamp(11px, 1.1vw, 14px)'}}>{a.totalPSIN}</td>
-                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', fontWeight:'bold', fontSize:'clamp(11px, 1.1vw, 14px)',
+                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', color:'#2e7d32', fontWeight:'bold'}}>{a.totalA}</td>
+                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', color:'#e65100', fontWeight:'bold'}}>{a.totalP}</td>
+                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', color:'#c62828', fontWeight:'bold'}}>{a.totalPSIN}</td>
+                  <td style={{border:'1px solid #ccc', padding:'6px 4px', textAlign:'center', fontWeight:'bold',
                     color: a.porcentaje >= 75 ? '#2e7d32' : a.porcentaje >= 50 ? '#e65100' : '#c62828'}}>
                     {a.porcentaje}%
                   </td>
@@ -195,6 +192,40 @@ function Reportes() {
               ))}
             </tbody>
           </table>
+
+          <div className="table-mobile">
+            {reporte.map((a, idx) => (
+              <div key={a.numero} className="table-row">
+                <div className="table-row-header">
+                  <span className="table-row-number">{a.numero}</span>
+                  <span className="table-row-title">{a.nombre}</span>
+                </div>
+                <div className="table-row-data" style={{gridTemplateColumns: 'repeat(3, 1fr)'}}>
+                  <div className="table-row-item" style={{alignItems: 'center'}}>
+                    <span className="table-row-label" style={{color:'#2e7d32'}}>Asistió</span>
+                    <span style={{fontSize:'1.25rem', fontWeight:'bold', color:'#2e7d32'}}>{a.totalA}</span>
+                  </div>
+                  <div className="table-row-item" style={{alignItems: 'center'}}>
+                    <span className="table-row-label" style={{color:'#e65100'}}>Permiso</span>
+                    <span style={{fontSize:'1.25rem', fontWeight:'bold', color:'#e65100'}}>{a.totalP}</span>
+                  </div>
+                  <div className="table-row-item" style={{alignItems: 'center'}}>
+                    <span className="table-row-label" style={{color:'#c62828'}}>PSIN</span>
+                    <span style={{fontSize:'1.25rem', fontWeight:'bold', color:'#c62828'}}>{a.totalPSIN}</span>
+                  </div>
+                </div>
+                <div className="table-row-item">
+                  <span className="table-row-label">% Asistencia</span>
+                  <span style={{
+                    fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center',
+                    color: a.porcentaje >= 75 ? '#2e7d32' : a.porcentaje >= 50 ? '#e65100' : '#c62828'
+                  }}>
+                    {a.porcentaje}%
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
 
           <div style={{marginTop:'20px', padding:'15px', background:'#f5f5f5', borderRadius:'8px'}}>
             <p style={{fontWeight:'bold', fontSize:'16px'}}>Resumen del mes:</p>
