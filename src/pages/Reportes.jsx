@@ -50,8 +50,8 @@ function Reportes() {
     return semanas
   }
 
-  async function generarReporte() {
-    if (!mes) { alert('Por favor seleccioná el mes'); return }
+async function generarReporte() {
+    if (!mes) { window.Swal.fire({icon: 'warning', title: 'Campo requerido', text: 'Por favor seleccioná el mes'}); return }
     setCargando(true)
 
     const semanasData = obtenerSemanas(parseInt(anio), parseInt(mes))

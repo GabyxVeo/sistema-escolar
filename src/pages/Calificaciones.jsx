@@ -105,7 +105,7 @@ function Calificaciones() {
   }
 
   async function guardarCalificaciones() {
-    if (!periodo) { alert('Por favor seleccioná el periodo'); return }
+    if (!periodo) { window.Swal.fire({icon: 'warning', title: 'Campo requerido', text: 'Por favor seleccioná el periodo'}); return }
     let hayNotas = false
     for (const alumno of alumnos) {
       for (const tipo of TIPOS) {
@@ -122,13 +122,13 @@ function Calificaciones() {
         }
       }
     }
-    if (!hayNotas) { alert('Por favor ingresá al menos una nota'); return }
-    alert('✅ Calificaciones guardadas correctamente')
+    if (!hayNotas) { window.Swal.fire({icon: 'warning', title: 'Campo requerido', text: 'Por favor ingresá al menos una nota'}); return }
+    window.Swal.fire({icon: 'success', title: 'Éxito', text: 'Calificaciones guardadas correctamente'})
   }
 
   async function generarWord() {
     if (!periodo || !gradoSeleccionado) {
-      alert('Por favor seleccioná el grado y el periodo primero')
+      window.Swal.fire({icon: 'warning', title: 'Campo requerido', text: 'Por favor seleccioná el grado y el periodo primero'})
       return
     }
 

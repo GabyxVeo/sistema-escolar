@@ -65,11 +65,11 @@ function Alumnos() {
 
   async function guardarAlumno() {
     if (!formulario.nie || !formulario.nombre || !formulario.apellido) {
-      alert('Por favor completá NIE, nombre y apellido')
+      window.Swal.fire({icon: 'warning', title: 'Campo requerido', text: 'Por favor completá NIE, nombre y apellido'})
       return
     }
     if (es4C && !formulario.fecha_nacimiento) {
-      alert('Por favor ingresá la fecha de nacimiento')
+      window.Swal.fire({icon: 'warning', title: 'Campo requerido', text: 'Por favor ingresá la fecha de nacimiento'})
       return
     }
 
@@ -105,7 +105,7 @@ function Alumnos() {
         grado_id: parseInt(gradoFiltro)
       }).eq('id', editandoId)
 
-      alert('✅ Alumno actualizado correctamente')
+      window.Swal.fire({icon: 'success', title: 'Éxito', text: 'Alumno actualizado correctamente'})
     } else {
       let responsable_id = null
 
@@ -138,13 +138,13 @@ function Alumnos() {
       if (errorAlumno) {
         if (responsable_id) await supabase.from('responsables').delete().eq('id', responsable_id)
         if (errorAlumno.code === '23505') {
-          alert('⚠️ El NIE ' + formulario.nie + ' ya existe en la base de datos.')
+          window.Swal.fire({icon: 'error', title: 'NIE duplicado', text: 'El NIE ' + formulario.nie + ' ya existe en la base de datos.'})
         } else {
-          alert('⚠️ Error al guardar: ' + errorAlumno.message)
+          window.Swal.fire({icon: 'error', title: 'Error', text: 'Error al guardar: ' + errorAlumno.message})
         }
         return
       }
-      alert('✅ Alumno guardado correctamente')
+      window.Swal.fire({icon: 'success', title: 'Éxito', text: 'Alumno guardado correctamente'})
     }
 
     setFormulario(formularioVacio)
@@ -154,7 +154,17 @@ function Alumnos() {
   }
 
   async function eliminarAlumno(id) {
-    if (confirm('¿Estás seguro de eliminar este alumno?')) {
+    const result = await window.Swal.fire({
+      icon: 'warning',
+      title: '¿Estás seguro?',
+      text: 'Esta acción eliminará al alumno y todos sus registros.',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33',
+      reverseButtons: true
+    })
+    if (result.isConfirmed) {
       const alumno = alumnos.find(a => a.id === id)
       await supabase.from('asistencia').delete().eq('alumno_id', id)
       await supabase.from('calificaciones').delete().eq('alumno_id', id)
@@ -163,7 +173,7 @@ function Alumnos() {
         await supabase.from('responsables').delete().eq('id', alumno.responsable_id)
       }
       cargarAlumnos()
-      alert('✅ Alumno eliminado correctamente')
+      window.Swal.fire({icon: 'success', title: 'Eliminado', text: 'Alumno eliminado correctamente'})
     }
   }
 

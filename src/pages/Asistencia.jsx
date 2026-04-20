@@ -57,17 +57,17 @@ function Asistencia() {
           .eq('alumno_id', parseInt(alumno_id))
           .eq('fecha', fecha)
       }
-      alert('✅ Asistencia actualizada correctamente')
+      window.Swal.fire({icon: 'success', title: 'Éxito', text: 'Asistencia actualizada correctamente'})
     } else {
       const registros = Object.entries(asistencias).map(([alumno_id, estado]) => ({
         alumno_id: parseInt(alumno_id), fecha, estado
       }))
       const { error } = await supabase.from('asistencia').insert(registros)
       if (error) {
-        alert('Error al guardar la asistencia')
+        window.Swal.fire({icon: 'error', title: 'Error', text: 'Error al guardar la asistencia'})
       } else {
         setModoEdicion(true)
-        alert('✅ Asistencia guardada correctamente')
+        window.Swal.fire({icon: 'success', title: 'Éxito', text: 'Asistencia guardada correctamente'})
       }
     }
   }
