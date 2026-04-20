@@ -1,0 +1,9 @@
+{
+  "name": "Sistema Escolar",
+  "short_name": "Escolar",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "icons": []
+}
