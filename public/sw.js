@@ -1,5 +1,5 @@
-const CACHE_NAME = 'sistema-escolar-v1';
-const urlsToCache = ['/', '/index.html', '/favicon.svg'];
+const CACHE_NAME = 'sistema-escolar-v2';
+const urlsToCache = ['/', '/favicon.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
