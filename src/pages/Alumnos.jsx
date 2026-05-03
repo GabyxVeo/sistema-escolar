@@ -1,35 +1,80 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
 import { Users, Pencil, Trash2, UserPlus, Contact, Phone, MapPin, AlertTriangle, X, User as UserIcon } from 'lucide-react'
+import { useUnsaved } from '../App'
+
+const FORMULARIO_VACIO = {
+  nie: '', nombre: '', apellido: '', fecha_nacimiento: '',
+  sexo: '', alergias: '', grado_id: '',
+  responsable_nombre: '', responsable_apellido: '',
+  responsable_telefono: '', responsable_parentesco: '',
+  responsable_dui: '', responsable_id: '', responsable_direccion: ''
+}
 
 function Alumnos() {
+  const { registerUnsaved } = useUnsaved()
   const [alumnos, setAlumnos] = useState([])
   const [grados, setGrados] = useState([])
   const [gradoFiltro, setGradoFiltro] = useState('')
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [editandoId, setEditandoId] = useState(null)
   const [modalAlumno, setModalAlumno] = useState(null)
+  const [hayCambiosSinGuardar, setHayCambiosSinGuardar] = useState(false)
+  const [formulario, setFormulario] = useState(FORMULARIO_VACIO)
+  const [formularioOriginal, setFormularioOriginal] = useState(FORMULARIO_VACIO)
 
-  const formularioVacio = {
-    nie: '', nombre: '', apellido: '', fecha_nacimiento: '',
-    sexo: '', alergias: '', grado_id: '',
-    responsable_nombre: '', responsable_apellido: '',
-    responsable_telefono: '', responsable_parentesco: '',
-    responsable_dui: '', responsable_id: '', responsable_direccion: ''
-  }
-
-  const [formulario, setFormulario] = useState(formularioVacio)
+  const hayCambiosRef = useRef(false)
+  const editandoIdRef = useRef(null)
 
   useEffect(() => { cargarGrados() }, [])
 
   useEffect(() => {
-    if (gradoFiltro) {
-      cargarAlumnos()
-      setMostrarFormulario(false)
-      setEditandoId(null)
-      setFormulario(formularioVacio)
-    }
+    if (!gradoFiltro) return
+    cargarAlumnos()
+    setMostrarFormulario(false)
+    setEditandoId(null)
+    setFormulario(FORMULARIO_VACIO)
+    setFormularioOriginal(FORMULARIO_VACIO)
+    setHayCambiosSinGuardar(false)
   }, [gradoFiltro])
+
+
+  useEffect(() => { hayCambiosRef.current = hayCambiosSinGuardar }, [hayCambiosSinGuardar])
+  useEffect(() => { editandoIdRef.current = editandoId }, [editandoId])
+
+  useEffect(() => {
+    if (!hayCambiosSinGuardar) return
+    const handler = (e) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [hayCambiosSinGuardar])
+
+  useEffect(() => {
+    if (!mostrarFormulario) {
+      setHayCambiosSinGuardar(false)
+      return
+    }
+    setHayCambiosSinGuardar(JSON.stringify(formulario) !== JSON.stringify(formularioOriginal))
+  }, [formulario, formularioOriginal, mostrarFormulario])
+
+  useEffect(() => {
+    return registerUnsaved(async () => {
+      if (!hayCambiosRef.current) return true
+      const result = await window.Swal.fire({
+        icon: 'warning',
+        title: 'Datos sin guardar',
+        text: editandoIdRef.current
+          ? 'Hay cambios en la edición de un alumno que no se han guardado. ¿Desea continuar y perder los cambios?'
+          : 'Hay datos de un nuevo alumno que no se han guardado. ¿Desea continuar y perder los datos?',
+        showCancelButton: true,
+        confirmButtonText: 'Continuar',
+        cancelButtonText: 'Quedarme aquí',
+        confirmButtonColor: '#e65100',
+        reverseButtons: true
+      })
+      return result.isConfirmed
+    })
+  }, [registerUnsaved])
 
   async function cargarGrados() {
     const { data } = await supabase.from('grados').select('*')
@@ -46,7 +91,7 @@ function Alumnos() {
   }
 
   function editarAlumno(a) {
-    setFormulario({
+    const datos = {
       nie: a.nie, nombre: a.nombre, apellido: a.apellido,
       fecha_nacimiento: a.fecha_nacimiento || '', sexo: a.sexo || '',
       alergias: a.alergias || '', grado_id: a.grado_id,
@@ -57,19 +102,24 @@ function Alumnos() {
       responsable_dui: a.responsables?.dui || '',
       responsable_id: a.responsables?.id || '',
       responsable_direccion: a.responsables?.direccion || ''
-    })
+    }
+    setFormulario(datos)
+    setFormularioOriginal(datos)
     setEditandoId(a.id)
     setMostrarFormulario(true)
     window.scrollTo(0, 0)
   }
 
+  const gradoActual = grados.find(g => g.id === parseInt(gradoFiltro))
+  const es4C = gradoActual?.nombre === '4' && gradoActual?.seccion === 'C'
+
   async function guardarAlumno() {
     if (!formulario.nie || !formulario.nombre || !formulario.apellido) {
-      window.Swal.fire({icon: 'warning', title: 'Campo requerido', text: 'Por favor completá NIE, nombre y apellido'})
+      window.Swal.fire({ icon: 'warning', title: 'Campo requerido', text: 'Por favor completá NIE, nombre y apellido' })
       return
     }
     if (es4C && !formulario.fecha_nacimiento) {
-      window.Swal.fire({icon: 'warning', title: 'Campo requerido', text: 'Por favor ingresá la fecha de nacimiento'})
+      window.Swal.fire({ icon: 'warning', title: 'Campo requerido', text: 'Por favor ingresá la fecha de nacimiento' })
       return
     }
 
@@ -93,22 +143,16 @@ function Alumnos() {
           direccion: formulario.responsable_direccion
         }).eq('id', formulario.responsable_id)
       }
-
       await supabase.from('alumnos').update({
-        nie: formulario.nie,
-        nombre: formulario.nombre,
-        apellido: formulario.apellido,
+        nie: formulario.nie, nombre: formulario.nombre, apellido: formulario.apellido,
         fecha_nacimiento: formulario.fecha_nacimiento || null,
-        edad,
-        sexo: formulario.sexo,
+        edad, sexo: formulario.sexo,
         alergias: es4C ? formulario.alergias : null,
         grado_id: parseInt(gradoFiltro)
       }).eq('id', editandoId)
-
-      window.Swal.fire({icon: 'success', title: 'Éxito', text: 'Alumno actualizado correctamente'})
+      window.Swal.fire({ icon: 'success', title: 'Éxito', text: 'Alumno actualizado correctamente' })
     } else {
       let responsable_id = null
-
       if (es4C) {
         const { data: responsable } = await supabase
           .from('responsables')
@@ -122,47 +166,40 @@ function Alumnos() {
           }]).select()
         responsable_id = responsable[0].id
       }
-
       const { error: errorAlumno } = await supabase.from('alumnos').insert([{
-        nie: formulario.nie,
-        nombre: formulario.nombre,
-        apellido: formulario.apellido,
+        nie: formulario.nie, nombre: formulario.nombre, apellido: formulario.apellido,
         fecha_nacimiento: formulario.fecha_nacimiento || null,
-        edad,
-        sexo: formulario.sexo,
+        edad, sexo: formulario.sexo,
         alergias: es4C ? formulario.alergias : null,
         grado_id: parseInt(gradoFiltro),
         responsable_id
       }])
-
       if (errorAlumno) {
         if (responsable_id) await supabase.from('responsables').delete().eq('id', responsable_id)
         if (errorAlumno.code === '23505') {
-          window.Swal.fire({icon: 'error', title: 'NIE duplicado', text: 'El NIE ' + formulario.nie + ' ya existe en la base de datos.'})
+          window.Swal.fire({ icon: 'error', title: 'NIE duplicado', text: 'El NIE ' + formulario.nie + ' ya existe en la base de datos.' })
         } else {
-          window.Swal.fire({icon: 'error', title: 'Error', text: 'Error al guardar: ' + errorAlumno.message})
+          window.Swal.fire({ icon: 'error', title: 'Error', text: 'Error al guardar: ' + errorAlumno.message })
         }
         return
       }
-      window.Swal.fire({icon: 'success', title: 'Éxito', text: 'Alumno guardado correctamente'})
+      window.Swal.fire({ icon: 'success', title: 'Éxito', text: 'Alumno guardado correctamente' })
     }
 
-    setFormulario(formularioVacio)
+    setFormulario(FORMULARIO_VACIO)
+    setFormularioOriginal(FORMULARIO_VACIO)
     setMostrarFormulario(false)
     setEditandoId(null)
+    setHayCambiosSinGuardar(false)
     cargarAlumnos()
   }
 
   async function eliminarAlumno(id) {
     const result = await window.Swal.fire({
-      icon: 'warning',
-      title: '¿Estás seguro?',
+      icon: 'warning', title: '¿Estás seguro?',
       text: 'Esta acción eliminará al alumno y todos sus registros.',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#d33',
-      reverseButtons: true
+      showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33', reverseButtons: true
     })
     if (result.isConfirmed) {
       const alumno = alumnos.find(a => a.id === id)
@@ -173,47 +210,45 @@ function Alumnos() {
         await supabase.from('responsables').delete().eq('id', alumno.responsable_id)
       }
       cargarAlumnos()
-      window.Swal.fire({icon: 'success', title: 'Eliminado', text: 'Alumno eliminado correctamente'})
+      window.Swal.fire({ icon: 'success', title: 'Eliminado', text: 'Alumno eliminado correctamente' })
     }
   }
 
-  const gradoActual = grados.find(g => g.id === parseInt(gradoFiltro))
-  const es4C = gradoActual?.nombre === '4' && gradoActual?.seccion === 'C'
-
-  const thStyle = {
-    background: '#1a73e8',
-    color: 'white',
-    padding: '12px 10px',
-    fontSize: '15px',
-    whiteSpace: 'nowrap'
-  }
-
-  const tdStyle = {
-    padding: '11px 10px',
-    borderBottom: '1px solid #edf2f7',
-    fontSize: '15px',
-    verticalAlign: 'middle'
-  }
+  const thStyle = { background: '#1a73e8', color: 'white', padding: '12px 10px', fontSize: '15px', whiteSpace: 'nowrap' }
+  const tdStyle = { padding: '11px 10px', borderBottom: '1px solid #edf2f7', fontSize: '15px', verticalAlign: 'middle' }
 
   return (
-    <div style={{width:'100%'}}>
-      <p className="titulo-pagina"><Users style={{marginRight:'8px'}} />Nómina de Alumnos</p>
+    <div style={{ width: '100%' }}>
+      <p className="titulo-pagina"><Users style={{ marginRight: '8px' }} />Nómina de Alumnos</p>
 
-      <div className="card" style={{textAlign:'center', maxWidth:'550px', margin:'0 auto 16px auto'}}>
-        <div style={{display:'flex', justifyContent:'center', alignItems:'center', gap:'15px', flexWrap:'wrap'}}>
+      <div className="card" style={{ textAlign: 'center', maxWidth: '550px', margin: '0 auto 16px auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
           <div>
-            <label style={{fontWeight:'bold', marginRight:'8px', fontSize:'15px'}}>Seleccionar Grado:</label>
+            <label style={{ fontWeight: 'bold', marginRight: '8px', fontSize: '15px' }}>Seleccionar Grado:</label>
             <select value={gradoFiltro} onChange={e => setGradoFiltro(e.target.value)}
-              style={{padding:'8px', borderRadius:'6px', border:'1px solid #ddd', fontSize:'15px', width:'auto', marginBottom:'0'}}>
+              style={{ padding: '8px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '15px', width: 'auto', marginBottom: '0' }}>
               <option value="">-- Seleccionar grado --</option>
               {grados.map(g => <option key={g.id} value={g.id}>Grado {g.nombre} Sección {g.seccion}</option>)}
             </select>
           </div>
           {gradoFiltro && (
-            <button className="btn btn-primary" style={{whiteSpace:'nowrap'}} onClick={() => {
-              setMostrarFormulario(!mostrarFormulario)
+            <button className="btn btn-primary" style={{ whiteSpace: 'nowrap' }} onClick={async () => {
+              if (mostrarFormulario && hayCambiosSinGuardar) {
+                const result = await window.Swal.fire({
+                  icon: 'warning', title: 'Datos sin guardar',
+                  text: editandoId
+                    ? 'Hay cambios en la edición que no se han guardado. ¿Desea descartarlos?'
+                    : 'Hay datos del nuevo alumno que no se han guardado. ¿Desea descartarlos?',
+                  showCancelButton: true, confirmButtonText: 'Descartar', cancelButtonText: 'Cancelar',
+                  confirmButtonColor: '#e65100', reverseButtons: true
+                })
+                if (!result.isConfirmed) return
+              }
+              setMostrarFormulario(prev => !prev)
               setEditandoId(null)
-              setFormulario(formularioVacio)
+              setFormulario(FORMULARIO_VACIO)
+              setFormularioOriginal(FORMULARIO_VACIO)
+              setHayCambiosSinGuardar(false)
             }}>
               {mostrarFormulario ? 'Cancelar' : '+ Agregar Alumno'}
             </button>
@@ -221,94 +256,94 @@ function Alumnos() {
         </div>
 
         {gradoFiltro && gradoActual && (
-          <p style={{marginTop:'10px', fontSize:'14px', color:'#555'}}>
+          <p style={{ marginTop: '10px', fontSize: '14px', color: '#555' }}>
             Grado {gradoActual.nombre} — Sección "{gradoActual.seccion}" | Total: {alumnos.length} alumnos
           </p>
         )}
 
         {mostrarFormulario && (
-          <div style={{marginTop:'20px', textAlign:'left'}}>
-            <p style={{fontWeight:'bold', marginBottom:'10px', fontSize:'15px'}}>
-              {editandoId ? <><Pencil style={{marginRight:'6px'}} />Editar Alumno</> : <><UserPlus style={{marginRight:'6px'}} />Datos del Alumno</>}
+          <div style={{ marginTop: '20px', textAlign: 'left' }}>
+            <p style={{ fontWeight: 'bold', marginBottom: '10px', fontSize: '15px' }}>
+              {editandoId ? <><Pencil style={{ marginRight: '6px' }} />Editar Alumno</> : <><UserPlus style={{ marginRight: '6px' }} />Datos del Alumno</>}
             </p>
             <div className="form-grid">
-              <input placeholder="NIE *" value={formulario.nie} onChange={e => setFormulario({...formulario, nie: e.target.value})} />
-              <input placeholder="Nombre *" value={formulario.nombre} onChange={e => setFormulario({...formulario, nombre: e.target.value})} />
-              <input placeholder="Apellido *" value={formulario.apellido} onChange={e => setFormulario({...formulario, apellido: e.target.value})} />
-              <select value={formulario.sexo} onChange={e => setFormulario({...formulario, sexo: e.target.value})}>
+              <input placeholder="NIE *" value={formulario.nie} onChange={e => setFormulario(prev => ({ ...prev, nie: e.target.value }))} />
+              <input placeholder="Nombre *" value={formulario.nombre} onChange={e => setFormulario(prev => ({ ...prev, nombre: e.target.value }))} />
+              <input placeholder="Apellido *" value={formulario.apellido} onChange={e => setFormulario(prev => ({ ...prev, apellido: e.target.value }))} />
+              <select value={formulario.sexo} onChange={e => setFormulario(prev => ({ ...prev, sexo: e.target.value }))}>
                 <option value="">Sexo</option>
                 <option value="M">Masculino</option>
                 <option value="F">Femenino</option>
               </select>
               {es4C && (
                 <>
-                  <input type="date" value={formulario.fecha_nacimiento} onChange={e => setFormulario({...formulario, fecha_nacimiento: e.target.value})} />
-                  <input placeholder="Alergias (opcional)" value={formulario.alergias} onChange={e => setFormulario({...formulario, alergias: e.target.value})} />
+                  <input type="date" value={formulario.fecha_nacimiento} onChange={e => setFormulario(prev => ({ ...prev, fecha_nacimiento: e.target.value }))} />
+                  <input placeholder="Alergias (opcional)" value={formulario.alergias} onChange={e => setFormulario(prev => ({ ...prev, alergias: e.target.value }))} />
                 </>
               )}
             </div>
 
             {es4C && (
               <>
-                <p style={{fontWeight:'bold', margin:'15px 0 10px', fontSize:'15px'}}><Contact style={{marginRight:'6px'}} />Datos del Responsable</p>
+                <p style={{ fontWeight: 'bold', margin: '15px 0 10px', fontSize: '15px' }}><Contact style={{ marginRight: '6px' }} />Datos del Responsable</p>
                 <div className="form-grid">
-                  <input placeholder="Nombre del responsable" value={formulario.responsable_nombre} onChange={e => setFormulario({...formulario, responsable_nombre: e.target.value})} />
-                  <input placeholder="Apellido del responsable" value={formulario.responsable_apellido} onChange={e => setFormulario({...formulario, responsable_apellido: e.target.value})} />
-                  <input placeholder="DUI (ej: 04511014-1)" value={formulario.responsable_dui} onChange={e => setFormulario({...formulario, responsable_dui: e.target.value})} />
-                  <input placeholder="Teléfono (ej: 7569-7912)" value={formulario.responsable_telefono} onChange={e => setFormulario({...formulario, responsable_telefono: e.target.value})} />
-                  <input placeholder="Parentesco (ej: madre, padre)" value={formulario.responsable_parentesco} onChange={e => setFormulario({...formulario, responsable_parentesco: e.target.value})} />
-                  <input placeholder="Dirección" value={formulario.responsable_direccion} onChange={e => setFormulario({...formulario, responsable_direccion: e.target.value})} />
+                  <input placeholder="Nombre del responsable" value={formulario.responsable_nombre} onChange={e => setFormulario(prev => ({ ...prev, responsable_nombre: e.target.value }))} />
+                  <input placeholder="Apellido del responsable" value={formulario.responsable_apellido} onChange={e => setFormulario(prev => ({ ...prev, responsable_apellido: e.target.value }))} />
+                  <input placeholder="DUI (ej: 04511014-1)" value={formulario.responsable_dui} onChange={e => setFormulario(prev => ({ ...prev, responsable_dui: e.target.value }))} />
+                  <input placeholder="Teléfono (ej: 7569-7912)" value={formulario.responsable_telefono} onChange={e => setFormulario(prev => ({ ...prev, responsable_telefono: e.target.value }))} />
+                  <input placeholder="Parentesco (ej: madre, padre)" value={formulario.responsable_parentesco} onChange={e => setFormulario(prev => ({ ...prev, responsable_parentesco: e.target.value }))} />
+                  <input placeholder="Dirección" value={formulario.responsable_direccion} onChange={e => setFormulario(prev => ({ ...prev, responsable_direccion: e.target.value }))} />
                 </div>
               </>
             )}
 
-            <button className="btn btn-success" style={{marginTop:'10px'}} onClick={guardarAlumno}>
-              <Users style={{marginRight:'6px'}} />{editandoId ? 'Actualizar Alumno' : 'Guardar Alumno'}
+            <button className="btn btn-success" style={{ marginTop: '10px' }} onClick={guardarAlumno}>
+              <Users style={{ marginRight: '6px' }} />{editandoId ? 'Actualizar Alumno' : 'Guardar Alumno'}
             </button>
           </div>
         )}
       </div>
 
-{gradoFiltro && (
+      {gradoFiltro && (
         <div className="card">
           <table className="table-desktop">
             <thead>
               <tr>
-                <th style={{...thStyle, width:'35px', textAlign:'center'}}>N°</th>
-                <th style={{...thStyle, width:'90px'}}>NIE</th>
-                <th style={{...thStyle, width:'175px'}}>Nombre completo</th>
-                <th style={{...thStyle, width:'55px', textAlign:'center'}}>Sexo</th>
-                <th style={{...thStyle, width:'60px', textAlign:'center'}}>Grado</th>
-                <th style={{...thStyle, width:'70px', textAlign:'center'}}>Sección</th>
+                <th style={{ ...thStyle, width: '35px', textAlign: 'center' }}>N°</th>
+                <th style={{ ...thStyle, width: '90px' }}>NIE</th>
+                <th style={{ ...thStyle, width: '175px' }}>Nombre completo</th>
+                <th style={{ ...thStyle, width: '55px', textAlign: 'center' }}>Sexo</th>
+                <th style={{ ...thStyle, width: '60px', textAlign: 'center' }}>Grado</th>
+                <th style={{ ...thStyle, width: '70px', textAlign: 'center' }}>Sección</th>
                 {es4C && (
                   <>
-                    <th style={{...thStyle, width:'100px'}}>Fecha Nac.</th>
-                    <th style={{...thStyle, width:'50px', textAlign:'center'}}>Edad</th>
+                    <th style={{ ...thStyle, width: '100px' }}>Fecha Nac.</th>
+                    <th style={{ ...thStyle, width: '50px', textAlign: 'center' }}>Edad</th>
                   </>
                 )}
-                <th style={{...thStyle, width:'90px', textAlign:'center'}}>Acciones</th>
+                <th style={{ ...thStyle, width: '90px', textAlign: 'center' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {alumnos.map((a, index) => (
                 <tr key={a.id}>
-                  <td style={{...tdStyle, textAlign:'center'}}>{index + 1}</td>
+                  <td style={{ ...tdStyle, textAlign: 'center' }}>{index + 1}</td>
                   <td style={tdStyle}>{a.nie}</td>
-                  <td style={{...tdStyle, width:'175px'}}>{a.apellido}, {a.nombre}</td>
-                  <td style={{...tdStyle, textAlign:'center'}}>{a.sexo}</td>
-                  <td style={{...tdStyle, textAlign:'center'}}>{a.grados?.nombre}</td>
-                  <td style={{...tdStyle, textAlign:'center'}}>{a.grados?.seccion}</td>
+                  <td style={{ ...tdStyle, width: '175px' }}>{a.apellido}, {a.nombre}</td>
+                  <td style={{ ...tdStyle, textAlign: 'center' }}>{a.sexo}</td>
+                  <td style={{ ...tdStyle, textAlign: 'center' }}>{a.grados?.nombre}</td>
+                  <td style={{ ...tdStyle, textAlign: 'center' }}>{a.grados?.seccion}</td>
                   {es4C && (
                     <>
                       <td style={tdStyle}>{a.fecha_nacimiento}</td>
-                      <td style={{...tdStyle, textAlign:'center'}}>{a.edad}</td>
+                      <td style={{ ...tdStyle, textAlign: 'center' }}>{a.edad}</td>
                     </>
                   )}
-                  <td style={{...tdStyle, textAlign:'center'}}>
-                    <div style={{display:'flex', gap:'6px', alignItems:'center', justifyContent:'center'}}>
-                      <button className="btn btn-info" title="Ver detalles" style={{padding:'5px 10px', background:'#17a2b8', color:'white'}} onClick={() => setModalAlumno(a)}><UserIcon size={16} /></button>
-                      <button className="btn btn-primary" title="Editar" style={{padding:'5px 10px'}} onClick={() => editarAlumno(a)}><Pencil size={16} /></button>
-                      <button className="btn btn-danger" title="Eliminar" style={{padding:'5px 10px'}} onClick={() => eliminarAlumno(a.id)}><Trash2 size={16} /></button>
+                  <td style={{ ...tdStyle, textAlign: 'center' }}>
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
+                      <button className="btn btn-info" title="Ver detalles" style={{ padding: '5px 10px', background: '#17a2b8', color: 'white' }} onClick={() => setModalAlumno(a)}><UserIcon size={16} /></button>
+                      <button className="btn btn-primary" title="Editar" style={{ padding: '5px 10px' }} onClick={() => editarAlumno(a)}><Pencil size={16} /></button>
+                      <button className="btn btn-danger" title="Eliminar" style={{ padding: '5px 10px' }} onClick={() => eliminarAlumno(a.id)}><Trash2 size={16} /></button>
                     </div>
                   </td>
                 </tr>
@@ -361,139 +396,62 @@ function Alumnos() {
               </div>
             ))}
           </div>
-          {alumnos.length === 0 && <p style={{textAlign:'center', marginTop:'20px', color:'#999', fontSize:'15px'}}>No hay alumnos en este grado aún</p>}
+          {alumnos.length === 0 && <p style={{ textAlign: 'center', marginTop: '20px', color: '#999', fontSize: '15px' }}>No hay alumnos en este grado aún</p>}
         </div>
       )}
 
       {!gradoFiltro && (
-        <div className="card" style={{textAlign:'center', color:'#999', fontSize:'16px'}}>
-          <Users style={{marginRight:'6px'}} />Seleccioná un grado para ver la nómina
+        <div className="card" style={{ textAlign: 'center', color: '#999', fontSize: '16px' }}>
+          <Users style={{ marginRight: '6px' }} />Seleccioná un grado para ver la nómina
         </div>
       )}
 
       {modalAlumno && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 1000
+          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
         }} onClick={() => setModalAlumno(null)}>
           <div style={{
             background: 'white', borderRadius: '16px', padding: '24px',
             maxWidth: '500px', width: '90%', maxHeight: '90vh', overflow: 'auto',
             boxShadow: '0 20px 60px rgba(0,0,0,0.2)'
           }} onClick={e => e.stopPropagation()}>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
-              <h2 style={{fontSize: '20px', fontWeight: 'bold', color: '#1a73e8', margin: 0}}>
-                <UserIcon style={{marginRight: '8px', verticalAlign: 'middle'}} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1a73e8', margin: 0 }}>
+                <UserIcon style={{ marginRight: '8px', verticalAlign: 'middle' }} />
                 {modalAlumno.apellido}, {modalAlumno.nombre}
               </h2>
-              <button onClick={() => setModalAlumno(null)} style={{
-                background: 'none', border: 'none', cursor: 'pointer', padding: '4px'
-              }}>
+              <button onClick={() => setModalAlumno(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
                 <X size={24} />
               </button>
             </div>
 
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px'}}>
-              <div style={{
-                background: '#f8f9fa', borderRadius: '12px', padding: '16px',
-                display: 'flex', alignItems: 'center', gap: '12px'
-              }}>
-                <div style={{background: '#e3f2fd', borderRadius: '10px', padding: '10px'}}>
-                  <UserIcon size={20} color="#1976d2" />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              {[
+                { icon: <UserIcon size={20} color="#1976d2" />, bg: '#e3f2fd', label: 'NIE', value: modalAlumno.nie },
+                { icon: <Users size={20} color="#1976d2" />, bg: '#e3f2fd', label: 'Sexo', value: modalAlumno.sexo || '-' },
+                { icon: <Contact size={20} color="#e65100" />, bg: '#fff3e0', label: 'Responsable', value: `${modalAlumno.responsables?.nombre || ''} ${modalAlumno.responsables?.apellido || ''}`.trim() || '-' },
+                { icon: <Contact size={20} color="#e65100" />, bg: '#fff3e0', label: 'DUI', value: modalAlumno.responsables?.dui || '-' },
+                { icon: <Phone size={20} color="#2e7d32" />, bg: '#e8f5e9', label: 'Teléfono', value: modalAlumno.responsables?.telefono || '-' },
+                { icon: <MapPin size={20} color="#2e7d32" />, bg: '#e8f5e9', label: 'Dirección', value: modalAlumno.responsables?.direccion || '-' },
+              ].map(({ icon, bg, label, value }) => (
+                <div key={label} style={{ background: '#f8f9fa', borderRadius: '12px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ background: bg, borderRadius: '10px', padding: '10px' }}>{icon}</div>
+                  <div>
+                    <p style={{ fontSize: '11px', color: '#666', margin: 0 }}>{label}</p>
+                    <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#333', margin: 0 }}>{value}</p>
+                  </div>
                 </div>
-                <div>
-                  <p style={{fontSize: '11px', color: '#666', margin: 0}}>NIE</p>
-                  <p style={{fontSize: '14px', fontWeight: 'bold', color: '#333', margin: 0}}>{modalAlumno.nie}</p>
-                </div>
-              </div>
+              ))}
 
-              <div style={{
-                background: '#f8f9fa', borderRadius: '12px', padding: '16px',
-                display: 'flex', alignItems: 'center', gap: '12px'
-              }}>
-                <div style={{background: '#e3f2fd', borderRadius: '10px', padding: '10px'}}>
-                  <Users size={20} color="#1976d2" />
-                </div>
-                <div>
-                  <p style={{fontSize: '11px', color: '#666', margin: 0}}>Sexo</p>
-                  <p style={{fontSize: '14px', fontWeight: 'bold', color: '#333', margin: 0}}>{modalAlumno.sexo || '-'}</p>
-                </div>
-              </div>
-
-              <div style={{
-                background: '#f8f9fa', borderRadius: '12px', padding: '16px',
-                display: 'flex', alignItems: 'center', gap: '12px'
-              }}>
-                <div style={{background: '#fff3e0', borderRadius: '10px', padding: '10px'}}>
-                  <Contact size={20} color="#e65100" />
-                </div>
-                <div>
-                  <p style={{fontSize: '11px', color: '#666', margin: 0}}>Responsable</p>
-                  <p style={{fontSize: '14px', fontWeight: 'bold', color: '#333', margin: 0}}>
-                    {modalAlumno.responsables?.nombre} {modalAlumno.responsables?.apellido}
-                  </p>
-                </div>
-              </div>
-
-              <div style={{
-                background: '#f8f9fa', borderRadius: '12px', padding: '16px',
-                display: 'flex', alignItems: 'center', gap: '12px'
-              }}>
-                <div style={{background: '#fff3e0', borderRadius: '10px', padding: '10px'}}>
-                  <Contact size={20} color="#e65100" />
-                </div>
-                <div>
-                  <p style={{fontSize: '11px', color: '#666', margin: 0}}>DUI</p>
-                  <p style={{fontSize: '14px', fontWeight: 'bold', color: '#333', margin: 0}}>
-                    {modalAlumno.responsables?.dui || '-'}
-                  </p>
-                </div>
-              </div>
-
-              <div style={{
-                background: '#f8f9fa', borderRadius: '12px', padding: '16px',
-                display: 'flex', alignItems: 'center', gap: '12px'
-              }}>
-                <div style={{background: '#e8f5e9', borderRadius: '10px', padding: '10px'}}>
-                  <Phone size={20} color="#2e7d32" />
-                </div>
-                <div>
-                  <p style={{fontSize: '11px', color: '#666', margin: 0}}>Teléfono</p>
-                  <p style={{fontSize: '14px', fontWeight: 'bold', color: '#333', margin: 0}}>
-                    {modalAlumno.responsables?.telefono || '-'}
-                  </p>
-                </div>
-              </div>
-
-              <div style={{
-                background: '#f8f9fa', borderRadius: '12px', padding: '16px',
-                display: 'flex', alignItems: 'center', gap: '12px'
-              }}>
-                <div style={{background: '#e8f5e9', borderRadius: '10px', padding: '10px'}}>
-                  <MapPin size={20} color="#2e7d32" />
-                </div>
-                <div>
-                  <p style={{fontSize: '11px', color: '#666', margin: 0}}>Dirección</p>
-                  <p style={{fontSize: '14px', fontWeight: 'bold', color: '#333', margin: 0}}>
-                    {modalAlumno.responsables?.direccion || '-'}
-                  </p>
-                </div>
-              </div>
-
-              {(modalAlumno.alergias) && (
-                <div style={{
-                  background: '#ffebee', borderRadius: '12px', padding: '16px',
-                  display: 'flex', alignItems: 'center', gap: '12px', gridColumn: 'span 2'
-                }}>
-                  <div style={{background: '#ffcdd2', borderRadius: '10px', padding: '10px'}}>
+              {modalAlumno.alergias && (
+                <div style={{ background: '#ffebee', borderRadius: '12px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px', gridColumn: 'span 2' }}>
+                  <div style={{ background: '#ffcdd2', borderRadius: '10px', padding: '10px' }}>
                     <AlertTriangle size={20} color="#c62828" />
                   </div>
                   <div>
-                    <p style={{fontSize: '11px', color: '#c62828', margin: 0}}>Alergias</p>
-                    <p style={{fontSize: '14px', fontWeight: 'bold', color: '#c62828', margin: 0}}>
-                      {modalAlumno.alergias}
-                    </p>
+                    <p style={{ fontSize: '11px', color: '#c62828', margin: 0 }}>Alergias</p>
+                    <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#c62828', margin: 0 }}>{modalAlumno.alergias}</p>
                   </div>
                 </div>
               )}

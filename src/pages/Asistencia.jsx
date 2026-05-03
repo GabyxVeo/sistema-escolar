@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
 import { ClipboardCheck, CheckCircle, XCircle, AlertCircle, Save, Pencil } from 'lucide-react'
+import { useUnsaved } from '../App'
 
 function Asistencia() {
+  const { registerUnsaved } = useUnsaved()
   const [alumnos, setAlumnos] = useState([])
   const [gradoId, setGradoId] = useState(null)
   const [fecha, setFecha] = useState(() => {
@@ -13,11 +15,53 @@ function Asistencia() {
     return `${anio}-${mes}-${dia}`
   })
   const [asistencias, setAsistencias] = useState({})
+  const [asistenciasOriginales, setAsistenciasOriginales] = useState({})
   const [modoEdicion, setModoEdicion] = useState(false)
+  const [hayCambiosSinGuardar, setHayCambiosSinGuardar] = useState(false)
+
+  // Refs para que el callback de registerUnsaved lea siempre el valor actual
+  // sin necesidad de re-registrarse cuando cambian
+  const hayCambiosRef = useRef(false)
+  const modoEdicionRef = useRef(false)
 
   useEffect(() => { cargarGradoFijo() }, [])
   useEffect(() => { if (gradoId) cargarAlumnos() }, [gradoId])
   useEffect(() => { if (gradoId && alumnos.length > 0) verificarAsistencia() }, [fecha, alumnos])
+
+  // Mantener refs sincronizados
+  useEffect(() => { hayCambiosRef.current = hayCambiosSinGuardar }, [hayCambiosSinGuardar])
+  useEffect(() => { modoEdicionRef.current = modoEdicion }, [modoEdicion])
+
+  useEffect(() => {
+    if (!hayCambiosSinGuardar) return
+    const handler = (e) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [hayCambiosSinGuardar])
+
+  // CLAVE: se registra UNA SOLA VEZ. Los refs proveen los valores actualizados.
+  useEffect(() => {
+    return registerUnsaved(async () => {
+      if (!hayCambiosRef.current) return true
+      const result = await window.Swal.fire({
+        icon: 'warning',
+        title: 'Datos sin guardar',
+        text: modoEdicionRef.current
+          ? 'Hay cambios en la asistencia que no se han guardado. ¿Desea continuar y perder los cambios?'
+          : 'Hay asistencia del día sin guardar. ¿Desea continuar y perder los datos?',
+        showCancelButton: true,
+        confirmButtonText: 'Continuar',
+        cancelButtonText: 'Quedarme aquí',
+        confirmButtonColor: '#e65100',
+        reverseButtons: true
+      })
+      return result.isConfirmed
+    })
+  }, [registerUnsaved]) // solo se registra una vez
+
+  useEffect(() => {
+    setHayCambiosSinGuardar(JSON.stringify(asistencias) !== JSON.stringify(asistenciasOriginales))
+  }, [asistencias, asistenciasOriginales])
 
   async function cargarGradoFijo() {
     const { data } = await supabase
@@ -47,6 +91,8 @@ function Asistencia() {
       setModoEdicion(false)
     }
     setAsistencias(inicial)
+    setAsistenciasOriginales(inicial)
+    setHayCambiosSinGuardar(false)
   }
 
   async function guardarAsistencia() {
@@ -57,23 +103,27 @@ function Asistencia() {
           .eq('alumno_id', parseInt(alumno_id))
           .eq('fecha', fecha)
       }
-      window.Swal.fire({icon: 'success', title: 'Éxito', text: 'Asistencia actualizada correctamente'})
+      setAsistenciasOriginales(asistencias)
+      setHayCambiosSinGuardar(false)
+      window.Swal.fire({ icon: 'success', title: 'Éxito', text: 'Asistencia actualizada correctamente' })
     } else {
       const registros = Object.entries(asistencias).map(([alumno_id, estado]) => ({
         alumno_id: parseInt(alumno_id), fecha, estado
       }))
       const { error } = await supabase.from('asistencia').insert(registros)
       if (error) {
-        window.Swal.fire({icon: 'error', title: 'Error', text: 'Error al guardar la asistencia'})
+        window.Swal.fire({ icon: 'error', title: 'Error', text: 'Error al guardar la asistencia' })
       } else {
         setModoEdicion(true)
-        window.Swal.fire({icon: 'success', title: 'Éxito', text: 'Asistencia guardada correctamente'})
+        setAsistenciasOriginales(asistencias)
+        setHayCambiosSinGuardar(false)
+        window.Swal.fire({ icon: 'success', title: 'Éxito', text: 'Asistencia guardada correctamente' })
       }
     }
   }
 
   function cambiarEstado(alumnoId, estado) {
-    setAsistencias({ ...asistencias, [alumnoId]: estado })
+    setAsistencias(prev => ({ ...prev, [alumnoId]: estado }))
   }
 
   const totalA = Object.values(asistencias).filter(e => e === 'A').length
@@ -88,68 +138,81 @@ function Asistencia() {
   }
 
   return (
-    <div style={{width:'100%'}}>
-      <p className="titulo-pagina"><ClipboardCheck style={{marginRight:'8px'}} />Control de Asistencia</p>
+    <div style={{ width: '100%' }}>
+      <p className="titulo-pagina"><ClipboardCheck style={{ marginRight: '8px' }} />Control de Asistencia</p>
 
-      <div className="card" style={{textAlign:'center', maxWidth:'500px', margin:'0 auto 24px auto'}}>
-        <p style={{fontSize:'20px', fontWeight:'bold', color:'#2c3e50'}}>Grado 4 — Sección "C"</p>
+      <div className="card" style={{ textAlign: 'center', maxWidth: '500px', margin: '0 auto 24px auto' }}>
+        <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#2c3e50' }}>Grado 4 — Sección "C"</p>
         {modoEdicion && (
-          <p style={{color:'#e65100', fontSize:'15px', marginTop:'6px'}}>
-            <Pencil style={{marginRight:'6px'}} />Editando asistencia ya registrada para esta fecha
+          <p style={{ color: '#e65100', fontSize: '15px', marginTop: '6px' }}>
+            <Pencil style={{ marginRight: '6px' }} />Editando asistencia ya registrada para esta fecha
           </p>
         )}
-        <div style={{marginTop:'12px', display:'flex', alignItems:'center', justifyContent:'center', gap:'12px'}}>
-          <label style={{fontWeight:'bold', fontSize:'16px'}}>Fecha:</label>
-          <input type="date" value={fecha} onChange={e => setFecha(e.target.value)}
-            style={{padding:'8px 12px', borderRadius:'6px', border:'1px solid #ddd', fontSize:'16px', width:'auto', marginBottom:'0'}} />
+        <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+          <label style={{ fontWeight: 'bold', fontSize: '16px' }}>Fecha:</label>
+          <input type="date" value={fecha} onChange={async (e) => {
+            if (hayCambiosSinGuardar) {
+              const result = await window.Swal.fire({
+                icon: 'warning', title: 'Datos sin guardar',
+                text: modoEdicion
+                  ? 'Hay cambios en la asistencia que no se han guardado. ¿Desea cambiar de fecha y perder los cambios?'
+                  : 'Hay asistencia del día sin guardar. ¿Desea cambiar de fecha y perder los datos?',
+                showCancelButton: true, confirmButtonText: 'Cambiar fecha', cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#e65100', reverseButtons: true
+              })
+              if (!result.isConfirmed) return
+            }
+            setFecha(e.target.value)
+          }}
+            style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '16px', width: 'auto', marginBottom: '0' }} />
         </div>
       </div>
 
       {alumnos.length > 0 && (
         <>
-          <div className="card" style={{display:'flex', gap:'30px', alignItems:'center', justifyContent:'center', maxWidth:'500px', margin:'0 auto 16px auto'}}>
-            <span style={{color:'#2e7d32', fontWeight:'bold', fontSize:'17px'}}><CheckCircle style={{marginRight:'6px'}} />Asistencia (A): {totalA}</span>
-            <span style={{color:'#e65100', fontWeight:'bold', fontSize:'17px'}}><AlertCircle style={{marginRight:'6px'}} />Permiso (P): {totalP}</span>
-            <span style={{color:'#c62828', fontWeight:'bold', fontSize:'17px'}}><XCircle style={{marginRight:'6px'}} />PSIN: {totalPSIN}</span>
+          <div className="card" style={{ display: 'flex', gap: '30px', alignItems: 'center', justifyContent: 'center', maxWidth: '500px', margin: '0 auto 16px auto' }}>
+            <span style={{ color: '#2e7d32', fontWeight: 'bold', fontSize: '17px' }}><CheckCircle style={{ marginRight: '6px' }} />Asistencia (A): {totalA}</span>
+            <span style={{ color: '#e65100', fontWeight: 'bold', fontSize: '17px' }}><AlertCircle style={{ marginRight: '6px' }} />Permiso (P): {totalP}</span>
+            <span style={{ color: '#c62828', fontWeight: 'bold', fontSize: '17px' }}><XCircle style={{ marginRight: '6px' }} />PSIN: {totalPSIN}</span>
           </div>
 
           <div className="card">
             <table className="table-desktop">
               <thead>
                 <tr>
-                  <th style={{background:'#1a73e8', color:'white', padding:'10px', textAlign:'center', fontSize:'15px', whiteSpace:'nowrap'}}>N°</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'10px', textAlign:'left', fontSize:'15px', whiteSpace:'nowrap', width:'175px'}}>Nombre del Estudiante</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'10px 6px', textAlign:'center', fontSize:'15px', whiteSpace:'nowrap'}}>A</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'10px 6px', textAlign:'center', fontSize:'15px', whiteSpace:'nowrap'}}>P</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'10px 6px', textAlign:'center', fontSize:'15px', whiteSpace:'nowrap'}}>PSIN</th>
-                  <th style={{background:'#1a73e8', color:'white', padding:'10px 6px', textAlign:'center', fontSize:'15px', whiteSpace:'nowrap'}}>Estado</th>
+                  <th style={{ background: '#1a73e8', color: 'white', padding: '10px', textAlign: 'center', fontSize: '15px', whiteSpace: 'nowrap' }}>N°</th>
+                  <th style={{ background: '#1a73e8', color: 'white', padding: '10px', textAlign: 'left', fontSize: '15px', whiteSpace: 'nowrap', width: '175px' }}>Nombre del Estudiante</th>
+                  <th style={{ background: '#1a73e8', color: 'white', padding: '10px 6px', textAlign: 'center', fontSize: '15px', whiteSpace: 'nowrap' }}>A</th>
+                  <th style={{ background: '#1a73e8', color: 'white', padding: '10px 6px', textAlign: 'center', fontSize: '15px', whiteSpace: 'nowrap' }}>P</th>
+                  <th style={{ background: '#1a73e8', color: 'white', padding: '10px 6px', textAlign: 'center', fontSize: '15px', whiteSpace: 'nowrap' }}>PSIN</th>
+                  <th style={{ background: '#1a73e8', color: 'white', padding: '10px 6px', textAlign: 'center', fontSize: '15px', whiteSpace: 'nowrap' }}>Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {alumnos.map((a, index) => (
                   <tr key={a.id}>
-                    <td style={{padding:'10px', fontSize:'14px', borderBottom:'1px solid #edf2f7', textAlign:'center'}}>{index + 1}</td>
-                    <td style={{padding:'10px', fontSize:'15px', borderBottom:'1px solid #edf2f7', whiteSpace:'nowrap', width:'175px'}}>{a.apellido}, {a.nombre}</td>
-                    <td style={{padding:'10px 6px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
+                    <td style={{ padding: '10px', fontSize: '14px', borderBottom: '1px solid #edf2f7', textAlign: 'center' }}>{index + 1}</td>
+                    <td style={{ padding: '10px', fontSize: '15px', borderBottom: '1px solid #edf2f7', whiteSpace: 'nowrap', width: '175px' }}>{a.apellido}, {a.nombre}</td>
+                    <td style={{ padding: '10px 6px', textAlign: 'center', borderBottom: '1px solid #edf2f7' }}>
                       <input type="radio" name={`est-${a.id}`}
                         checked={asistencias[a.id] === 'A'}
                         onChange={() => cambiarEstado(a.id, 'A')}
-                        style={{width:'18px', height:'18px', cursor:'pointer', margin:0, padding:0}} />
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', margin: 0, padding: 0 }} />
                     </td>
-                    <td style={{padding:'10px 6px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
+                    <td style={{ padding: '10px 6px', textAlign: 'center', borderBottom: '1px solid #edf2f7' }}>
                       <input type="radio" name={`est-${a.id}`}
                         checked={asistencias[a.id] === 'P'}
                         onChange={() => cambiarEstado(a.id, 'P')}
-                        style={{width:'18px', height:'18px', cursor:'pointer', margin:0, padding:0}} />
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', margin: 0, padding: 0 }} />
                     </td>
-                    <td style={{padding:'10px 6px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
+                    <td style={{ padding: '10px 6px', textAlign: 'center', borderBottom: '1px solid #edf2f7' }}>
                       <input type="radio" name={`est-${a.id}`}
                         checked={asistencias[a.id] === 'PSIN'}
                         onChange={() => cambiarEstado(a.id, 'PSIN')}
-                        style={{width:'18px', height:'18px', cursor:'pointer', margin:0, padding:0}} />
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', margin: 0, padding: 0 }} />
                     </td>
-                    <td style={{padding:'10px 6px', textAlign:'center', borderBottom:'1px solid #edf2f7'}}>
-                      <span style={{...colorEstado(asistencias[a.id]), padding:'5px 8px', borderRadius:'6px', fontSize:'15px'}}>
+                    <td style={{ padding: '10px 6px', textAlign: 'center', borderBottom: '1px solid #edf2f7' }}>
+                      <span style={{ ...colorEstado(asistencias[a.id]), padding: '5px 8px', borderRadius: '6px', fontSize: '15px' }}>
                         {asistencias[a.id]}
                       </span>
                     </td>
@@ -165,38 +228,38 @@ function Asistencia() {
                     <span className="table-row-number">{index + 1}</span>
                     <span className="table-row-title">{a.apellido}, {a.nombre}</span>
                   </div>
-                  <div className="table-row-data" style={{gridTemplateColumns: 'repeat(3, 1fr)'}}>
-                    <div className="table-row-item" style={{alignItems: 'center'}}>
-                      <label style={{cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px'}}>
+                  <div className="table-row-data" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                    <div className="table-row-item" style={{ alignItems: 'center' }}>
+                      <label style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                         <input type="radio" name={`est-mobile-${a.id}`}
                           checked={asistencias[a.id] === 'A'}
                           onChange={() => cambiarEstado(a.id, 'A')}
-                          style={{width:'20px', height:'20px', cursor:'pointer'}} />
-                        <span style={{color: '#2e7d32', fontWeight: 'bold'}}>A</span>
+                          style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+                        <span style={{ color: '#2e7d32', fontWeight: 'bold' }}>A</span>
                       </label>
                     </div>
-                    <div className="table-row-item" style={{alignItems: 'center'}}>
-                      <label style={{cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px'}}>
+                    <div className="table-row-item" style={{ alignItems: 'center' }}>
+                      <label style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                         <input type="radio" name={`est-mobile-${a.id}`}
                           checked={asistencias[a.id] === 'P'}
                           onChange={() => cambiarEstado(a.id, 'P')}
-                          style={{width:'20px', height:'20px', cursor:'pointer'}} />
-                        <span style={{color: '#e65100', fontWeight: 'bold'}}>P</span>
+                          style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+                        <span style={{ color: '#e65100', fontWeight: 'bold' }}>P</span>
                       </label>
                     </div>
-                    <div className="table-row-item" style={{alignItems: 'center'}}>
-                      <label style={{cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px'}}>
+                    <div className="table-row-item" style={{ alignItems: 'center' }}>
+                      <label style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                         <input type="radio" name={`est-mobile-${a.id}`}
                           checked={asistencias[a.id] === 'PSIN'}
                           onChange={() => cambiarEstado(a.id, 'PSIN')}
-                          style={{width:'20px', height:'20px', cursor:'pointer'}} />
-                        <span style={{color: '#c62828', fontWeight: 'bold'}}>PSIN</span>
+                          style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+                        <span style={{ color: '#c62828', fontWeight: 'bold' }}>PSIN</span>
                       </label>
                     </div>
                   </div>
                   <div className="table-row-item">
                     <span className="table-row-label">Estado Actual</span>
-                    <span style={{...colorEstado(asistencias[a.id]), padding:'8px 16px', borderRadius:'8px', fontWeight: 'bold', textAlign: 'center'}}>
+                    <span style={{ ...colorEstado(asistencias[a.id]), padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', textAlign: 'center' }}>
                       {asistencias[a.id]}
                     </span>
                   </div>
@@ -204,9 +267,11 @@ function Asistencia() {
               ))}
             </div>
 
-            <div style={{textAlign:'center', marginTop:'20px'}}>
-              <button className="btn btn-success" style={{padding:'12px 40px', fontSize:'16px'}} onClick={guardarAsistencia}>
-                {modoEdicion ? <><Pencil style={{marginRight:'6px'}} />Actualizar Asistencia</> : <><Save style={{marginRight:'6px'}} />Guardar Asistencia del Día</>}
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <button className="btn btn-success" style={{ padding: '12px 40px', fontSize: '16px' }} onClick={guardarAsistencia}>
+                {modoEdicion
+                  ? <><Pencil style={{ marginRight: '6px' }} />Actualizar Asistencia</>
+                  : <><Save style={{ marginRight: '6px' }} />Guardar Asistencia del Día</>}
               </button>
             </div>
           </div>
