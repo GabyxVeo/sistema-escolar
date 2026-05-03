@@ -19,8 +19,6 @@ function Asistencia() {
   const [modoEdicion, setModoEdicion] = useState(false)
   const [hayCambiosSinGuardar, setHayCambiosSinGuardar] = useState(false)
 
-  // Refs para que el callback de registerUnsaved lea siempre el valor actual
-  // sin necesidad de re-registrarse cuando cambian
   const hayCambiosRef = useRef(false)
   const modoEdicionRef = useRef(false)
 
@@ -28,7 +26,6 @@ function Asistencia() {
   useEffect(() => { if (gradoId) cargarAlumnos() }, [gradoId])
   useEffect(() => { if (gradoId && alumnos.length > 0) verificarAsistencia() }, [fecha, alumnos])
 
-  // Mantener refs sincronizados
   useEffect(() => { hayCambiosRef.current = hayCambiosSinGuardar }, [hayCambiosSinGuardar])
   useEffect(() => { modoEdicionRef.current = modoEdicion }, [modoEdicion])
 
@@ -39,7 +36,6 @@ function Asistencia() {
     return () => window.removeEventListener('beforeunload', handler)
   }, [hayCambiosSinGuardar])
 
-  // CLAVE: se registra UNA SOLA VEZ. Los refs proveen los valores actualizados.
   useEffect(() => {
     return registerUnsaved(async () => {
       if (!hayCambiosRef.current) return true
@@ -57,7 +53,7 @@ function Asistencia() {
       })
       return result.isConfirmed
     })
-  }, [registerUnsaved]) // solo se registra una vez
+  }, [registerUnsaved])
 
   useEffect(() => {
     setHayCambiosSinGuardar(JSON.stringify(asistencias) !== JSON.stringify(asistenciasOriginales))

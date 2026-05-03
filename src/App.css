@@ -418,7 +418,6 @@ table td:first-child {
   to { transform: rotate(360deg); }
 }
 
-/* Inputs numéricos de calificaciones — centrado y sin ancho forzado */
 input[type="number"] {
   width: auto;
   margin-bottom: 0;

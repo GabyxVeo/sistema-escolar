@@ -143,6 +143,7 @@ function Alumnos() {
           direccion: formulario.responsable_direccion
         }).eq('id', formulario.responsable_id)
       }
+
       await supabase.from('alumnos').update({
         nie: formulario.nie, nombre: formulario.nombre, apellido: formulario.apellido,
         fecha_nacimiento: formulario.fecha_nacimiento || null,
@@ -153,6 +154,7 @@ function Alumnos() {
       window.Swal.fire({ icon: 'success', title: 'Éxito', text: 'Alumno actualizado correctamente' })
     } else {
       let responsable_id = null
+
       if (es4C) {
         const { data: responsable } = await supabase
           .from('responsables')
@@ -166,6 +168,7 @@ function Alumnos() {
           }]).select()
         responsable_id = responsable[0].id
       }
+
       const { error: errorAlumno } = await supabase.from('alumnos').insert([{
         nie: formulario.nie, nombre: formulario.nombre, apellido: formulario.apellido,
         fecha_nacimiento: formulario.fecha_nacimiento || null,
@@ -174,6 +177,7 @@ function Alumnos() {
         grado_id: parseInt(gradoFiltro),
         responsable_id
       }])
+
       if (errorAlumno) {
         if (responsable_id) await supabase.from('responsables').delete().eq('id', responsable_id)
         if (errorAlumno.code === '23505') {
@@ -201,6 +205,7 @@ function Alumnos() {
       showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar',
       confirmButtonColor: '#d33', reverseButtons: true
     })
+
     if (result.isConfirmed) {
       const alumno = alumnos.find(a => a.id === id)
       await supabase.from('asistencia').delete().eq('alumno_id', id)
@@ -213,7 +218,6 @@ function Alumnos() {
       window.Swal.fire({ icon: 'success', title: 'Eliminado', text: 'Alumno eliminado correctamente' })
     }
   }
-
   const thStyle = { background: '#1a73e8', color: 'white', padding: '12px 10px', fontSize: '15px', whiteSpace: 'nowrap' }
   const tdStyle = { padding: '11px 10px', borderBottom: '1px solid #edf2f7', fontSize: '15px', verticalAlign: 'middle' }
 
